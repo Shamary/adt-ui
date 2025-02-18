@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import DataTable from "react-data-table-component";
 import dayjs from "dayjs";
 
@@ -9,15 +9,14 @@ const columns = [
   { name: "Courier No.", selector: (row) => row.courierNo, sortable: true },
   { name: "Store", selector: (row) => row.store, sortable: true },
   { name: "Description", selector: (row) => row.description, sortable: true },
-  { name: "Stage", selector: (row) => row.stage, sortable: true },
   { name: "Status", selector: (row) => row.status, sortable: true },
   { name: "Last Updated", selector: (row) => row.lastUpdated, sortable: true },
 ];
 
 const initialData = [
-  { aerotrack: "AT12345", courierNo: "CN987654", store: "Amazon", description: "Laptop", stage: "Shipped", status: "In Transit", lastUpdated: "12/02/2025" },
-  { aerotrack: "AT54321", courierNo: "CN123456", store: "eBay", description: "Phone", stage: "Processing", status: "Pending", lastUpdated: "10/02/2025" },
-  { aerotrack: "AT67890", courierNo: "CN567890", store: "BestBuy", description: "Headphones", stage: "Delivered", status: "Delivered", lastUpdated: "08/02/2025" },
+  { aerotrack: "AT12345", courierNo: "CN987654", store: "Amazon", description: "Laptop", status: "Arrived", lastUpdated: "12/02/2025" },
+  { aerotrack: "AT54321", courierNo: "CN123456", store: "eBay", description: "Phone", status: "Processed", lastUpdated: "10/02/2025" },
+  { aerotrack: "AT67890", courierNo: "CN567890", store: "BestBuy", description: "Headphones", status: "Ready for Pickup", lastUpdated: "08/02/2025" },
 ];
 
 const PackageList = () => {
@@ -25,6 +24,16 @@ const PackageList = () => {
   const [statusFilter, setStatusFilter] = useState("");
   const [dateFilter, setDateFilter] = useState("");
   const [filteredData, setFilteredData] = useState(initialData);
+
+  useEffect(() => {
+    // Simulate API call for package updates
+    fetchPackageUpdates();
+  }, []);
+
+  const fetchPackageUpdates = () => {
+    // Placeholder for API integration to fetch updated package statuses
+    console.log("Fetching package updates...");
+  };
 
   const handleSearch = (e) => {
     setSearch(e.target.value);
@@ -80,9 +89,10 @@ const PackageList = () => {
           onChange={handleStatusChange}
         >
           <option value="">All Status</option>
-          <option value="In Transit">In Transit</option>
+          <option value="Arrived">Arrived</option>
+          <option value="Processed">Processed</option>
+          <option value="Ready for Pickup">Ready for Pickup</option>
           <option value="Delivered">Delivered</option>
-          <option value="Pending">Pending</option>
         </select>
         <input
           type="date"
