@@ -99,7 +99,7 @@ const Footer = () => {
                   Useful Links
                 </h2> */}
                 <ul>
-                  <li>
+                  {/* <li>
                     <a
                       href="/"
                       className="mb-4 inline-block text-base font-medium text-body-color hover:text-primary"
@@ -107,10 +107,10 @@ const Footer = () => {
                       {" "}
                       Blog{" "}
                     </a>
-                  </li>
+                  </li> */}
                   <li>
                     <a
-                      href="/"
+                      href="/rates"
                       className="mb-4 inline-block text-base font-medium text-body-color hover:text-primary"
                     >
                       {" "}
@@ -154,7 +154,7 @@ const Footer = () => {
                       Privacy Policy{" "}
                     </a>
                   </li>
-                  <li>
+                  {/* <li>
                     <a
                       href="/"
                       className="mb-4 inline-block text-base font-medium text-body-color hover:text-primary"
@@ -162,7 +162,7 @@ const Footer = () => {
                       {" "}
                       Refund Policy{" "}
                     </a>
-                  </li>
+                  </li> */}
                 </ul>
               </div>
             </div>
