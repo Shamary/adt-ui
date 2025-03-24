@@ -2,13 +2,15 @@
 import { useEffect, useState } from 'react';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
-import DatePicker from 'react-datepicker';
-import 'react-datepicker/dist/react-datepicker.css';
+import { DatePicker } from 'antd';
+import 'antd/dist/reset.css'; // Import Ant Design CSS
+import moment from 'moment';
 import Cookies from 'js-cookie';
 
 const UserProfilePage = () => {
     const [email, setEmail] = useState('');
     const [address, setAddress] = useState<{ line1: string; city: string; state: string; zipCode: string; houseNumber: string } | null>(null);
+    const [houseNo, SetHouseNo] = useState('');
     const [isLoading, setIsLoading] = useState(true);
 
     // Fetch email from cookie and active address from the backend on page load
@@ -21,8 +23,19 @@ const UserProfilePage = () => {
                     setEmail(userEmail);
                 }
 
+                const houseNo = Cookies.get('houseno');
+                if (houseNo) {
+                    SetHouseNo(houseNo);
+                }
+
+                const token = Cookies.get('access_token');
+
                 // Fetch active address
-                const addressResponse = await fetch(`${process.env.NEXT_PUBLIC_API_HOST}/api/address/active`);
+                const addressResponse = await fetch(`${process.env.NEXT_PUBLIC_API_HOST}/api/address/active`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                    },
+                });
                 if (addressResponse.ok) {
                     const addressData = await addressResponse.json();
                     setAddress(addressData);
@@ -45,12 +58,12 @@ const UserProfilePage = () => {
             lastName: '',
             email: email,
             phoneNumber: '',
-            birthdate: null as Date | null,
+            birthdate: null as moment.Moment | null,
             addressLine: address?.line1 || '',
             city: address?.city || 'Miami',
             state: address?.state || 'FL',
             zipCode: address?.zipCode || '33206-3206',
-            houseNumber: address?.houseNumber || '',
+            houseNumber: houseNo || '',
         },
         validationSchema: Yup.object({
             firstName: Yup.string().required('First name is required'),
@@ -77,7 +90,10 @@ const UserProfilePage = () => {
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify(values),
+                    body: JSON.stringify({
+                        ...values,
+                        birthdate: values.birthdate ? values.birthdate.toDate() : null, // Convert moment to Date
+                    }),
                 });
 
                 if (response.ok) {
@@ -186,12 +202,12 @@ const UserProfilePage = () => {
                                     <DatePicker
                                         id="birthdate"
                                         name="birthdate"
-                                        selected={formik.values.birthdate}
-                                        onChange={(date: Date) => formik.setFieldValue('birthdate', date)}
+                                        value={formik.values.birthdate}
+                                        onChange={(date) => formik.setFieldValue('birthdate', date)}
                                         onBlur={formik.handleBlur}
+                                        disabledDate={(current) => current && current > moment().endOf('day')} // Disable future dates
                                         className={`w-full rounded-md border py-3 px-6 text-base text-body-color placeholder-body-color shadow-one outline-none focus:border-primary focus-visible:shadow-none dark:bg-[#242B51] dark:shadow-signUp ${formik.touched.birthdate && formik.errors.birthdate ? 'border-red-500' : 'border-transparent'
                                             }`}
-                                        placeholderText="Select your birthdate"
                                     />
                                     {formik.touched.birthdate && formik.errors.birthdate ? (
                                         <div className="text-red-500 text-sm">{String(formik.errors.birthdate)}</div>
@@ -232,6 +248,8 @@ const UserProfilePage = () => {
                                         placeholder="Enter your city"
                                         className={`w-full rounded-md border py-3 px-6 text-base text-body-color placeholder-body-color shadow-one outline-none focus:border-primary focus-visible:shadow-none dark:bg-[#242B51] dark:shadow-signUp ${formik.touched.city && formik.errors.city ? 'border-red-500' : 'border-transparent'
                                             }`}
+                                        disabled // Disable the field
+                                        style={{ backgroundColor: '#f3f4f6', color: '#6b7280' }} // Greyed out style
                                     />
                                     {formik.touched.city && formik.errors.city ? (
                                         <div className="text-red-500 text-sm">{formik.errors.city}</div>
@@ -251,6 +269,8 @@ const UserProfilePage = () => {
                                         placeholder="Enter your state"
                                         className={`w-full rounded-md border py-3 px-6 text-base text-body-color placeholder-body-color shadow-one outline-none focus:border-primary focus-visible:shadow-none dark:bg-[#242B51] dark:shadow-signUp ${formik.touched.state && formik.errors.state ? 'border-red-500' : 'border-transparent'
                                             }`}
+                                        disabled // Disable the field
+                                        style={{ backgroundColor: '#f3f4f6', color: '#6b7280' }} // Greyed out style
                                     />
                                     {formik.touched.state && formik.errors.state ? (
                                         <div className="text-red-500 text-sm">{formik.errors.state}</div>
@@ -270,6 +290,8 @@ const UserProfilePage = () => {
                                         placeholder="Enter your zip code"
                                         className={`w-full rounded-md border py-3 px-6 text-base text-body-color placeholder-body-color shadow-one outline-none focus:border-primary focus-visible:shadow-none dark:bg-[#242B51] dark:shadow-signUp ${formik.touched.zipCode && formik.errors.zipCode ? 'border-red-500' : 'border-transparent'
                                             }`}
+                                        disabled // Disable the field
+                                        style={{ backgroundColor: '#f3f4f6', color: '#6b7280' }} // Greyed out style
                                     />
                                     {formik.touched.zipCode && formik.errors.zipCode ? (
                                         <div className="text-red-500 text-sm">{formik.errors.zipCode}</div>

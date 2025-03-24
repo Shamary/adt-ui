@@ -37,10 +37,15 @@ const SigninPage = () => {
           Cookies.set('access_token', data.access_token, { secure: true, sameSite: 'strict' });
           Cookies.set('refresh_token', data.refresh_token, { secure: true, sameSite: 'strict' });
           Cookies.set('email', values.username, { secure: true, sameSite: 'strict' });
-          Cookies.set('houseno', data.houseno, { secure: true, sameSite: 'strict' });
+          Cookies.set('houseno', data.house_no, { secure: true, sameSite: 'strict' });
 
           // Redirect to the dashboard or another page after successful login
-          router.push('/package');
+          if (data.proile_complete) {
+            router.push('/package');
+          }
+          else {
+            router.push('/user-profile');
+          }
         } else {
           // Handle API errors
           const errorData = await response.json();
