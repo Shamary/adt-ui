@@ -3,32 +3,59 @@ import { useEffect, useState } from 'react';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import { DatePicker } from 'antd';
-import 'antd/dist/reset.css'; // Import Ant Design CSS
+import 'antd/dist/reset.css';
 import moment from 'moment';
 import Cookies from 'js-cookie';
+import { toast } from 'react-toastify';
+
+interface UserData {
+    firstName: string;
+    lastName: string;
+    email: string;
+    phoneNumber: string | null;
+    houseno: string;
+    birthDate: string | null;
+}
+
+interface AddressData {
+    line1: string;
+    city: string;
+    state: string;
+    zipCode: string;
+}
 
 const UserProfilePage = () => {
-    const [email, setEmail] = useState('');
-    const [address, setAddress] = useState<{ line1: string; city: string; state: string; zipCode: string; houseNumber: string } | null>(null);
-    const [houseNo, SetHouseNo] = useState('');
+    const [userData, setUserData] = useState<UserData | null>(null);
+    const [address, setAddress] = useState<AddressData | null>(null);
     const [isLoading, setIsLoading] = useState(true);
+    const [token, setToken] = useState('');
 
-    // Fetch email from cookie and active address from the backend on page load
+    // Fetch user data and address on page load
     useEffect(() => {
         const fetchData = async () => {
             try {
-                // Get email from cookie
-                const userEmail = Cookies.get('email');
-                if (userEmail) {
-                    setEmail(userEmail);
-                }
-
-                const houseNo = Cookies.get('houseno');
-                if (houseNo) {
-                    SetHouseNo(houseNo);
-                }
-
                 const token = Cookies.get('access_token');
+                const email = Cookies.get('email');
+
+                if (!token || !email) {
+                    throw new Error('Missing authentication data');
+                }
+
+                setToken(token);
+
+                // Fetch user data
+                const userResponse = await fetch(`${process.env.NEXT_PUBLIC_API_HOST}/api/users/${email}`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                    },
+                });
+
+                if (!userResponse.ok) {
+                    throw new Error('Failed to fetch user data');
+                }
+
+                const userData: UserData = await userResponse.json();
+                setUserData(userData);
 
                 // Fetch active address
                 const addressResponse = await fetch(`${process.env.NEXT_PUBLIC_API_HOST}/api/address/active`, {
@@ -36,14 +63,15 @@ const UserProfilePage = () => {
                         'Authorization': `Bearer ${token}`,
                     },
                 });
+
                 if (addressResponse.ok) {
+                    console.log(`===ADDRESS fetched`);
                     const addressData = await addressResponse.json();
                     setAddress(addressData);
-                } else {
-                    console.error('Failed to fetch active address');
                 }
             } catch (error) {
                 console.error('Error fetching data:', error);
+                toast.error('Failed to load user data');
             } finally {
                 setIsLoading(false);
             }
@@ -54,64 +82,74 @@ const UserProfilePage = () => {
 
     const formik = useFormik({
         initialValues: {
-            firstName: '',
-            lastName: '',
-            email: email,
-            phoneNumber: '',
-            birthdate: null as moment.Moment | null,
+            firstName: userData?.firstName || '',
+            lastName: userData?.lastName || '',
+            email: userData?.email || '',
+            phoneNumber: userData?.phoneNumber || '',
+            birthdate: userData?.birthDate ? moment(userData.birthDate) : null,
             addressLine: address?.line1 || '',
             city: address?.city || 'Miami',
             state: address?.state || 'FL',
             zipCode: address?.zipCode || '33206-3206',
-            houseNumber: houseNo || '',
+            houseNumber: userData?.houseno || '',
         },
         validationSchema: Yup.object({
-            firstName: Yup.string().required('First name is required'),
-            lastName: Yup.string().required('Last name is required'),
-            email: Yup.string().email('Invalid email address').required('Required'),
-            phoneNumber: Yup.string()
-                .matches(/^[0-9]{10}$/, 'Phone number must be 10 digits')
-                .required('Phone number is required'),
-            birthdate: Yup.date()
-                .required('Birthdate is required')
-                .max(new Date(), 'Birthdate cannot be in the future'),
-            addressLine: Yup.string().required('Address line is required'),
-            city: Yup.string().required('City is required'),
-            state: Yup.string().required('State is required'),
-            zipCode: Yup.string()
-                .matches(/^\d{5}(-\d{4})?$/, 'Invalid zip code')
-                .required('Zip code is required'),
-            houseNumber: Yup.string().required('House number is required'),
+            // ... keep your existing validation schema
         }),
         onSubmit: async (values) => {
             try {
-                const response = await fetch(`${process.env.NEXT_PUBLIC_API_HOST}/api/update-profile`, {
-                    method: 'POST',
+                const response = await fetch(`${process.env.NEXT_PUBLIC_API_HOST}/api/users`, {
+                    method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
                     },
                     body: JSON.stringify({
-                        ...values,
-                        birthdate: values.birthdate ? values.birthdate.toDate() : null, // Convert moment to Date
+                        firstName: values.firstName,
+                        lastName: values.lastName,
+                        email: values.email,
+                        phoneNumber: values.phoneNumber,
+                        birthDate: values.birthdate ? values.birthdate.toISOString() : null,
+                        houseno: values.houseNumber,
                     }),
                 });
 
                 if (response.ok) {
-                    alert('Profile updated successfully!');
+                    toast.success('Profile updated successfully!');
+                    // Get the updated user data
+                    const updatedUser = await response.json();
+                    setUserData(updatedUser.data);
+
+                    console.log(`=====Updated user ${JSON.stringify(updatedUser.data)}`);
+
+                    // Manually update formik values to ensure they stay in sync
+                    // formik.setValues({
+                    //     ...values,
+                    //     firstName: updatedUser.firstName,
+                    //     lastName: updatedUser.lastName,
+                    //     email: updatedUser.email,
+                    //     phoneNumber: updatedUser.phoneNumber,
+                    //     birthdate: updatedUser.birthDate ? moment(updatedUser.birthDate) : null,
+                    //     houseNumber: updatedUser.houseno,
+                    // });
                 } else {
                     const errorData = await response.json();
-                    alert(`Error: ${errorData.message}`);
+                    toast.error(`Error: ${errorData.message}`);
                 }
             } catch (error) {
                 console.error('Error:', error);
-                alert('An error occurred while updating the profile.');
+                toast.error('An error occurred while updating the profile.');
             }
         },
-        enableReinitialize: true, // Allow formik to reinitialize when initialValues change
+        enableReinitialize: true,
     });
 
     if (isLoading) {
         return <div>Loading...</div>;
+    }
+
+    if (!userData) {
+        return <div>Failed to load user data</div>;
     }
 
     return (
@@ -124,6 +162,7 @@ const UserProfilePage = () => {
                                 User Profile
                             </h3>
                             <form onSubmit={formik.handleSubmit}>
+                                {/* Email Field */}
                                 <div className="mb-8">
                                     <label htmlFor="email" className="mb-3 block text-sm font-medium text-dark dark:text-white">
                                         Email
@@ -135,9 +174,11 @@ const UserProfilePage = () => {
                                         value={formik.values.email}
                                         disabled
                                         className="w-full rounded-md border py-3 px-6 text-base text-body-color placeholder-body-color shadow-one outline-none focus:border-primary focus-visible:shadow-none dark:bg-[#242B51] dark:shadow-signUp"
-                                        style={{ backgroundColor: '#f3f4f6', color: '#6b7280' }} // Greyed out style
+                                        style={{ backgroundColor: '#f3f4f6', color: '#6b7280' }}
                                     />
                                 </div>
+
+                                {/* First Name Field */}
                                 <div className="mb-8">
                                     <label htmlFor="firstName" className="mb-3 block text-sm font-medium text-dark dark:text-white">
                                         First Name
@@ -157,6 +198,8 @@ const UserProfilePage = () => {
                                         <div className="text-red-500 text-sm">{formik.errors.firstName}</div>
                                     ) : null}
                                 </div>
+
+                                {/* Last Name Field */}
                                 <div className="mb-8">
                                     <label htmlFor="lastName" className="mb-3 block text-sm font-medium text-dark dark:text-white">
                                         Last Name
@@ -176,6 +219,8 @@ const UserProfilePage = () => {
                                         <div className="text-red-500 text-sm">{formik.errors.lastName}</div>
                                     ) : null}
                                 </div>
+
+                                {/* Phone Number Field */}
                                 <div className="mb-8">
                                     <label htmlFor="phoneNumber" className="mb-3 block text-sm font-medium text-dark dark:text-white">
                                         Phone Number
@@ -195,6 +240,8 @@ const UserProfilePage = () => {
                                         <div className="text-red-500 text-sm">{formik.errors.phoneNumber}</div>
                                     ) : null}
                                 </div>
+
+                                {/* Birthdate Field */}
                                 <div className="mb-8">
                                     <label htmlFor="birthdate" className="mb-3 block text-sm font-medium text-dark dark:text-white">
                                         Birthdate
@@ -205,7 +252,7 @@ const UserProfilePage = () => {
                                         value={formik.values.birthdate}
                                         onChange={(date) => formik.setFieldValue('birthdate', date)}
                                         onBlur={formik.handleBlur}
-                                        disabledDate={(current) => current && current > moment().endOf('day')} // Disable future dates
+                                        disabledDate={(current) => current && current > moment().endOf('day')}
                                         className={`w-full rounded-md border py-3 px-6 text-base text-body-color placeholder-body-color shadow-one outline-none focus:border-primary focus-visible:shadow-none dark:bg-[#242B51] dark:shadow-signUp ${formik.touched.birthdate && formik.errors.birthdate ? 'border-red-500' : 'border-transparent'
                                             }`}
                                     />
@@ -213,90 +260,70 @@ const UserProfilePage = () => {
                                         <div className="text-red-500 text-sm">{String(formik.errors.birthdate)}</div>
                                     ) : null}
                                 </div>
-                                <div className="mb-8">
-                                    <label htmlFor="addressLine" className="mb-3 block text-sm font-medium text-dark dark:text-white">
-                                        Address Line
-                                    </label>
-                                    <input
-                                        id="addressLine"
-                                        name="addressLine"
-                                        type="text"
-                                        onChange={formik.handleChange}
-                                        onBlur={formik.handleBlur}
-                                        value={formik.values.addressLine}
-                                        placeholder="Enter your address"
-                                        className={`w-full rounded-md border py-3 px-6 text-base text-body-color placeholder-body-color shadow-one outline-none focus:border-primary focus-visible:shadow-none dark:bg-[#242B51] dark:shadow-signUp ${formik.touched.addressLine && formik.errors.addressLine ? 'border-red-500' : 'border-transparent'
-                                            }`}
-                                        disabled // Disable the field
-                                        style={{ backgroundColor: '#f3f4f6', color: '#6b7280' }} // Greyed out style
-                                    />
-                                    {formik.touched.addressLine && formik.errors.addressLine ? (
-                                        <div className="text-red-500 text-sm">{formik.errors.addressLine}</div>
-                                    ) : null}
-                                </div>
-                                <div className="mb-8">
-                                    <label htmlFor="city" className="mb-3 block text-sm font-medium text-dark dark:text-white">
-                                        City
-                                    </label>
-                                    <input
-                                        id="city"
-                                        name="city"
-                                        type="text"
-                                        onChange={formik.handleChange}
-                                        onBlur={formik.handleBlur}
-                                        value={formik.values.city}
-                                        placeholder="Enter your city"
-                                        className={`w-full rounded-md border py-3 px-6 text-base text-body-color placeholder-body-color shadow-one outline-none focus:border-primary focus-visible:shadow-none dark:bg-[#242B51] dark:shadow-signUp ${formik.touched.city && formik.errors.city ? 'border-red-500' : 'border-transparent'
-                                            }`}
-                                        disabled // Disable the field
-                                        style={{ backgroundColor: '#f3f4f6', color: '#6b7280' }} // Greyed out style
-                                    />
-                                    {formik.touched.city && formik.errors.city ? (
-                                        <div className="text-red-500 text-sm">{formik.errors.city}</div>
-                                    ) : null}
-                                </div>
-                                <div className="mb-8">
-                                    <label htmlFor="state" className="mb-3 block text-sm font-medium text-dark dark:text-white">
-                                        State
-                                    </label>
-                                    <input
-                                        id="state"
-                                        name="state"
-                                        type="text"
-                                        onChange={formik.handleChange}
-                                        onBlur={formik.handleBlur}
-                                        value={formik.values.state}
-                                        placeholder="Enter your state"
-                                        className={`w-full rounded-md border py-3 px-6 text-base text-body-color placeholder-body-color shadow-one outline-none focus:border-primary focus-visible:shadow-none dark:bg-[#242B51] dark:shadow-signUp ${formik.touched.state && formik.errors.state ? 'border-red-500' : 'border-transparent'
-                                            }`}
-                                        disabled // Disable the field
-                                        style={{ backgroundColor: '#f3f4f6', color: '#6b7280' }} // Greyed out style
-                                    />
-                                    {formik.touched.state && formik.errors.state ? (
-                                        <div className="text-red-500 text-sm">{formik.errors.state}</div>
-                                    ) : null}
-                                </div>
-                                <div className="mb-8">
-                                    <label htmlFor="zipCode" className="mb-3 block text-sm font-medium text-dark dark:text-white">
-                                        Zip Code
-                                    </label>
-                                    <input
-                                        id="zipCode"
-                                        name="zipCode"
-                                        type="text"
-                                        onChange={formik.handleChange}
-                                        onBlur={formik.handleBlur}
-                                        value={formik.values.zipCode}
-                                        placeholder="Enter your zip code"
-                                        className={`w-full rounded-md border py-3 px-6 text-base text-body-color placeholder-body-color shadow-one outline-none focus:border-primary focus-visible:shadow-none dark:bg-[#242B51] dark:shadow-signUp ${formik.touched.zipCode && formik.errors.zipCode ? 'border-red-500' : 'border-transparent'
-                                            }`}
-                                        disabled // Disable the field
-                                        style={{ backgroundColor: '#f3f4f6', color: '#6b7280' }} // Greyed out style
-                                    />
-                                    {formik.touched.zipCode && formik.errors.zipCode ? (
-                                        <div className="text-red-500 text-sm">{formik.errors.zipCode}</div>
-                                    ) : null}
-                                </div>
+
+                                {/* Address Fields (disabled) */}
+                                {address && (
+                                    <>
+                                        <div className="mb-8">
+                                            <label htmlFor="addressLine" className="mb-3 block text-sm font-medium text-dark dark:text-white">
+                                                Address Line
+                                            </label>
+                                            <input
+                                                id="addressLine"
+                                                name="addressLine"
+                                                type="text"
+                                                value={formik.values.addressLine}
+                                                className="w-full rounded-md border py-3 px-6 text-base text-body-color placeholder-body-color shadow-one outline-none focus:border-primary focus-visible:shadow-none dark:bg-[#242B51] dark:shadow-signUp"
+                                                disabled
+                                                style={{ backgroundColor: '#f3f4f6', color: '#6b7280' }}
+                                            />
+                                        </div>
+                                        <div className="mb-8">
+                                            <label htmlFor="city" className="mb-3 block text-sm font-medium text-dark dark:text-white">
+                                                City
+                                            </label>
+                                            <input
+                                                id="city"
+                                                name="city"
+                                                type="text"
+                                                value={formik.values.city}
+                                                className="w-full rounded-md border py-3 px-6 text-base text-body-color placeholder-body-color shadow-one outline-none focus:border-primary focus-visible:shadow-none dark:bg-[#242B51] dark:shadow-signUp"
+                                                disabled
+                                                style={{ backgroundColor: '#f3f4f6', color: '#6b7280' }}
+                                            />
+                                        </div>
+                                        <div className="mb-8">
+                                            <label htmlFor="state" className="mb-3 block text-sm font-medium text-dark dark:text-white">
+                                                State
+                                            </label>
+                                            <input
+                                                id="state"
+                                                name="state"
+                                                type="text"
+                                                value={formik.values.state}
+                                                className="w-full rounded-md border py-3 px-6 text-base text-body-color placeholder-body-color shadow-one outline-none focus:border-primary focus-visible:shadow-none dark:bg-[#242B51] dark:shadow-signUp"
+                                                disabled
+                                                style={{ backgroundColor: '#f3f4f6', color: '#6b7280' }}
+                                            />
+                                        </div>
+                                        <div className="mb-8">
+                                            <label htmlFor="zipCode" className="mb-3 block text-sm font-medium text-dark dark:text-white">
+                                                Zip Code
+                                            </label>
+                                            <input
+                                                id="zipCode"
+                                                name="zipCode"
+                                                type="text"
+                                                value={formik.values.zipCode}
+                                                className="w-full rounded-md border py-3 px-6 text-base text-body-color placeholder-body-color shadow-one outline-none focus:border-primary focus-visible:shadow-none dark:bg-[#242B51] dark:shadow-signUp"
+                                                disabled
+                                                style={{ backgroundColor: '#f3f4f6', color: '#6b7280' }}
+                                            />
+                                        </div>
+                                    </>
+                                )}
+
+                                {/* House Number Field */}
                                 <div className="mb-8">
                                     <label htmlFor="houseNumber" className="mb-3 block text-sm font-medium text-dark dark:text-white">
                                         House Number
@@ -305,19 +332,13 @@ const UserProfilePage = () => {
                                         id="houseNumber"
                                         name="houseNumber"
                                         type="text"
-                                        onChange={formik.handleChange}
-                                        onBlur={formik.handleBlur}
                                         value={formik.values.houseNumber}
-                                        placeholder="Enter your house number"
-                                        className={`w-full rounded-md border py-3 px-6 text-base text-body-color placeholder-body-color shadow-one outline-none focus:border-primary focus-visible:shadow-none dark:bg-[#242B51] dark:shadow-signUp ${formik.touched.houseNumber && formik.errors.houseNumber ? 'border-red-500' : 'border-transparent'
-                                            }`}
-                                        disabled // Disable the field
-                                        style={{ backgroundColor: '#f3f4f6', color: '#6b7280' }} // Greyed out style
+                                        className="w-full rounded-md border py-3 px-6 text-base text-body-color placeholder-body-color shadow-one outline-none focus:border-primary focus-visible:shadow-none dark:bg-[#242B51] dark:shadow-signUp"
+                                        disabled
+                                        style={{ backgroundColor: '#f3f4f6', color: '#6b7280' }}
                                     />
-                                    {formik.touched.houseNumber && formik.errors.houseNumber ? (
-                                        <div className="text-red-500 text-sm">{formik.errors.houseNumber}</div>
-                                    ) : null}
                                 </div>
+
                                 <div className="mb-6">
                                     <button
                                         type="submit"
