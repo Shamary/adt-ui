@@ -1,7 +1,13 @@
+'use client';
+
+import { useRouter } from 'next/navigation';
 import Link from "next/link";
 import Image from "next/image";
 
+
 const Hero = () => {
+  const router = useRouter();
+
   return (
     <>
       <section
@@ -38,21 +44,21 @@ const Hero = () => {
               Experience the simplest and most reliable way to import your packages from the US to Jamaica.
               Sign up today to get your personalized US shipping address and start shipping hassle-free!
             </p>
-            <button className="inline-block rounded-md mt-5 bg-yellow py-3 px-6 text-white text-lg font-semibold transition hover:bg-yellow-600 shadow-lg">
+            <button onClick={() => router.push('/signup')} className="inline-block rounded-md mt-5 bg-yellow py-3 px-6 text-white text-lg font-semibold transition hover:bg-yellow-600 shadow-lg">
               Sign Up For Free
             </button>
           </div>
         </div>
 
         <div className="w-full">
-            <Image
-              src="/images/hero/hero2.jpg"
-              alt="Full Width Image"
-              width={4096}
-              height={1048}
-              className="w-full object-cover"
-            />
-          </div>
+          <Image
+            src="/images/hero/hero2.jpg"
+            alt="Full Width Image"
+            width={4096}
+            height={1048}
+            className="w-full object-cover"
+          />
+        </div>
 
         <div className="absolute top-0 right-0 z-[-1] opacity-30 lg:opacity-100">
           <svg
