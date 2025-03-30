@@ -1,6 +1,7 @@
 export interface Rate {
     weight: string;
     price: string;
+    priceLocal: string;
   }
   
   export interface Order {
