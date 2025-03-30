@@ -40,7 +40,7 @@ const SigninPage = () => {
           Cookies.set('houseno', data.house_no, { secure: true, sameSite: 'strict' });
 
           // Redirect to the dashboard or another page after successful login
-          if (data.proile_complete) {
+          if (data.profile_complete) {
             router.push('/package');
           }
           else {

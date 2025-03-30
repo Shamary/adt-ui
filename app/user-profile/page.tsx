@@ -7,6 +7,7 @@ import 'antd/dist/reset.css';
 import moment from 'moment';
 import Cookies from 'js-cookie';
 import { toast } from 'react-toastify';
+import apiClient from '@/utils/apiClient';
 
 interface UserData {
     firstName: string;
@@ -44,11 +45,7 @@ const UserProfilePage = () => {
                 setToken(token);
 
                 // Fetch user data
-                const userResponse = await fetch(`${process.env.NEXT_PUBLIC_API_HOST}/api/users/${email}`, {
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                    },
-                });
+                const userResponse = await apiClient(`/api/users/${email}`);
 
                 if (!userResponse.ok) {
                     throw new Error('Failed to fetch user data');
@@ -58,14 +55,9 @@ const UserProfilePage = () => {
                 setUserData(userData);
 
                 // Fetch active address
-                const addressResponse = await fetch(`${process.env.NEXT_PUBLIC_API_HOST}/api/address/active`, {
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                    },
-                });
+                const addressResponse = await apiClient(`/api/address/active`);
 
                 if (addressResponse.ok) {
-                    console.log(`===ADDRESS fetched`);
                     const addressData = await addressResponse.json();
                     setAddress(addressData);
                 }
@@ -98,12 +90,8 @@ const UserProfilePage = () => {
         }),
         onSubmit: async (values) => {
             try {
-                const response = await fetch(`${process.env.NEXT_PUBLIC_API_HOST}/api/users`, {
+                const response = await apiClient(`/api/users`, {
                     method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
                     body: JSON.stringify({
                         firstName: values.firstName,
                         lastName: values.lastName,
@@ -119,19 +107,6 @@ const UserProfilePage = () => {
                     // Get the updated user data
                     const updatedUser = await response.json();
                     setUserData(updatedUser.data);
-
-                    console.log(`=====Updated user ${JSON.stringify(updatedUser.data)}`);
-
-                    // Manually update formik values to ensure they stay in sync
-                    // formik.setValues({
-                    //     ...values,
-                    //     firstName: updatedUser.firstName,
-                    //     lastName: updatedUser.lastName,
-                    //     email: updatedUser.email,
-                    //     phoneNumber: updatedUser.phoneNumber,
-                    //     birthdate: updatedUser.birthDate ? moment(updatedUser.birthDate) : null,
-                    //     houseNumber: updatedUser.houseno,
-                    // });
                 } else {
                     const errorData = await response.json();
                     toast.error(`Error: ${errorData.message}`);
