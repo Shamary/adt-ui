@@ -19,15 +19,17 @@ const Rates: React.FC<RatesProps> = ({ rates }) => {
             <table className="w-full border border-gray-300">
                 <thead>
                     <tr className="bg-blue-800 text-white text-left">
-                        <th className="px-4 py-2">Packages</th>
-                        <th className="px-4 py-2">Price</th>
+                        <th className="px-4 py-2">Packages (lb)</th>
+                        <th className="px-4 py-2">Price (USD)</th>
+                        <th className="px-4 py-2">Price (JMD)</th>
                     </tr>
                 </thead>
                 <tbody>
                     {rates.map((rate, index) => (
-                        <tr key={index} className={index % 2 === 0 ? "bg-gray-100 text-white" : "bg-white text-black"}>
+                        <tr key={index} className={index % 2 === 0 ? "bg-gray-100 text-black" : "bg-white text-black"}>
                             <td className="px-4 py-2 border">{rate.weight}</td>
                             <td className="px-4 py-2 border">${rate.price}</td>
+                            <td className="px-4 py-2 border">${rate.priceLocal}</td>
                         </tr>
                     ))}
                 </tbody>
