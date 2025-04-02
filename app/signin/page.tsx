@@ -5,9 +5,11 @@ import { useFormik } from "formik";
 import * as Yup from 'yup';
 import Cookies from "js-cookie";
 import { toast } from 'react-toastify'; // Import toast
+import { useAuthStore } from "@/stores/authStore";
 
 const SigninPage = () => {
   const router = useRouter(); // Initialize useRouter
+  const { isAuthenticated, setIsAuthenticated } = useAuthStore();
 
   const formik = useFormik({
     initialValues: {
@@ -38,6 +40,8 @@ const SigninPage = () => {
           Cookies.set('refresh_token', data.refresh_token, { secure: true, sameSite: 'strict' });
           Cookies.set('email', values.username, { secure: true, sameSite: 'strict' });
           Cookies.set('houseno', data.house_no, { secure: true, sameSite: 'strict' });
+
+          setIsAuthenticated(true);
 
           // Redirect to the dashboard or another page after successful login
           if (data.profile_complete) {

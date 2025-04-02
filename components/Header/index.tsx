@@ -4,11 +4,17 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import ThemeToggler from "./ThemeToggler";
 import menuData from "./menuData";
+import Cookies from "js-cookie";
+import { useRouter } from "next/navigation";
+import { toast } from "react-toastify";
+import { useAuthStore } from "@/stores/authStore";
 
 const Header = () => {
   const [navbarOpen, setNavbarOpen] = useState(false);
   const [sticky, setSticky] = useState(false);
   const [openIndex, setOpenIndex] = useState(-1);
+  const { isAuthenticated, setIsAuthenticated } = useAuthStore();
+  const router = useRouter();
 
   const navbarToggleHandler = () => {
     setNavbarOpen(!navbarOpen);
@@ -24,10 +30,56 @@ const Header = () => {
 
   useEffect(() => {
     window.addEventListener("scroll", handleStickyNavbar);
+    // Check authentication status when component mounts
+    const token = Cookies.get('access_token');
+    setIsAuthenticated(!!token);
   }, []);
 
   const handleSubmenu = (index) => {
     setOpenIndex(openIndex === index ? -1 : index);
+  };
+
+  const handleLogout = async () => {
+    try {
+      const refreshToken = Cookies.get('refresh_token');
+
+      // Call the logout API endpoint
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_HOST}/api/logout`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ refreshToken }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        toast.error(`Logout failed: ${errorData.message || 'Unknown error'}`);
+      } else {
+        toast.success('Logged out successfully');
+      }
+
+      // Remove all auth-related cookies
+      Cookies.remove('access_token');
+      Cookies.remove('refresh_token');
+      Cookies.remove('email');
+      Cookies.remove('houseno');
+
+      // Update authentication state
+      setIsAuthenticated(false);
+
+      // Redirect to home page
+      router.push('/');
+    } catch (error) {
+      console.error('Error during logout:', error);
+      // Still proceed with client-side cleanup even if there's an error
+      Cookies.remove('access_token');
+      Cookies.remove('refresh_token');
+      Cookies.remove('email');
+      Cookies.remove('houseno');
+      setIsAuthenticated(false);
+      router.push('/');
+    }
   };
 
   return (
@@ -76,26 +128,51 @@ const Header = () => {
                       )}
                     </li>
                   ))}
-                  <li className="lg:hidden">
-                    <Link href="/signin" className="flex py-2 text-base text-dark hover:opacity-70 dark:text-white lg:mr-0 lg:inline-flex lg:py-6 lg:px-0">
-                      Sign In
-                    </Link>
-                  </li>
-                  <li className="lg:hidden">
-                    <Link href="/signup" className="flex py-2 text-base text-dark hover:opacity-70 dark:text-white lg:mr-0 lg:inline-flex lg:py-6 lg:px-0">
-                      Sign Up
-                    </Link>
-                  </li>
+                  {!isAuthenticated && (
+                    <>
+                      <li className="lg:hidden">
+                        <Link href="/signin" className="flex py-2 text-base text-dark hover:opacity-70 dark:text-white lg:mr-0 lg:inline-flex lg:py-6 lg:px-0">
+                          Sign In
+                        </Link>
+                      </li>
+                      <li className="lg:hidden">
+                        <Link href="/signup" className="flex py-2 text-base text-dark hover:opacity-70 dark:text-white lg:mr-0 lg:inline-flex lg:py-6 lg:px-0">
+                          Sign Up
+                        </Link>
+                      </li>
+                    </>
+                  )}
+                  {isAuthenticated && (
+                    <li className="lg:hidden">
+                      <button
+                        onClick={handleLogout}
+                        className="flex py-2 text-base text-dark hover:opacity-70 dark:text-white lg:mr-0 lg:inline-flex lg:py-6 lg:px-0"
+                      >
+                        Logout
+                      </button>
+                    </li>
+                  )}
                 </ul>
               </nav>
             </div>
             <div className="flex items-center justify-end pr-16 lg:pr-0">
-              <Link href="/signin" className="hidden py-3 px-7 text-base font-bold text-dark hover:opacity-70 dark:text-white md:block">
-                Sign In
-              </Link>
-              <Link href="/signup" className="ease-in-up hidden rounded-md bg-primary py-3 px-8 text-base font-bold text-white transition duration-300 hover:bg-opacity-90 hover:shadow-signUp md:block md:px-9 lg:px-6 xl:px-9">
-                Sign Up
-              </Link>
+              {!isAuthenticated ? (
+                <>
+                  <Link href="/signin" className="hidden py-3 px-7 text-base font-bold text-dark hover:opacity-70 dark:text-white md:block">
+                    Sign In
+                  </Link>
+                  <Link href="/signup" className="ease-in-up hidden rounded-md bg-primary py-3 px-8 text-base font-bold text-white transition duration-300 hover:bg-opacity-90 hover:shadow-signUp md:block md:px-9 lg:px-6 xl:px-9">
+                    Sign Up
+                  </Link>
+                </>
+              ) : (
+                <button
+                  onClick={handleLogout}
+                  className="ease-in-up hidden rounded-md bg-primary py-3 px-8 text-base font-bold text-white transition duration-300 hover:bg-opacity-90 hover:shadow-signUp md:block md:px-9 lg:px-6 xl:px-9"
+                >
+                  Logout
+                </button>
+              )}
               {/* <div>
                 <ThemeToggler />
               </div> */}
