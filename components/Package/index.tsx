@@ -14,9 +14,9 @@ const columns = [
 ];
 
 const initialData = [
-  { aerotrack: "AT12345", courierNo: "CN987654", store: "Amazon", description: "Laptop", status: "Arrived", lastUpdated: "12/02/2025" },
-  { aerotrack: "AT54321", courierNo: "CN123456", store: "eBay", description: "Phone", status: "Processed", lastUpdated: "10/02/2025" },
-  { aerotrack: "AT67890", courierNo: "CN567890", store: "BestBuy", description: "Headphones", status: "Ready for Pickup", lastUpdated: "08/02/2025" },
+  // { aerotrack: "AT12345", courierNo: "CN987654", store: "Amazon", description: "Laptop", status: "Arrived", lastUpdated: "12/02/2025" },
+  // { aerotrack: "AT54321", courierNo: "CN123456", store: "eBay", description: "Phone", status: "Processed", lastUpdated: "10/02/2025" },
+  // { aerotrack: "AT67890", courierNo: "CN567890", store: "BestBuy", description: "Headphones", status: "Ready for Pickup", lastUpdated: "08/02/2025" },
 ];
 
 const PackageList = () => {
