@@ -4,6 +4,8 @@ import { useRouter } from "next/navigation"; // Import useRouter
 import { useFormik } from "formik";
 import * as Yup from 'yup';
 import Cookies from "js-cookie";
+import { useGoogleLogin } from "@react-oauth/google";
+import { toast } from "react-toastify";
 
 const SignupPage = () => {
   const router = useRouter(); // Initialize useRouter
@@ -54,6 +56,44 @@ const SignupPage = () => {
     },
   });
 
+  const handleGoogleSignup = useGoogleLogin({
+    flow: "auth-code",
+    ux_mode: 'redirect',
+    onSuccess: async (codeResponse) => {
+      try {
+        // Send the authorization code to your backend
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_HOST}/api/login/google`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ googleToken: codeResponse.code }),
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          Cookies.set("access_token", data.access_token, { secure: true, sameSite: "strict" });
+          Cookies.set('refresh_token', data.refresh_token, { secure: true, sameSite: 'strict' });
+          Cookies.set('email', data.email, { secure: true, sameSite: 'strict' });
+          Cookies.set('houseno', data.house_no, { secure: true, sameSite: 'strict' });
+
+          router.push("/package");
+        } else {
+          const errorData = await response.json();
+          console.log(`Error: ${errorData.message}`);
+          toast.error(`Signup with google failed`);
+        }
+      } catch (error) {
+        console.error("Google signup failed:", error);
+        alert("Google signup failed. Please try again.");
+      }
+    },
+    onError: (errorResponse) => {
+      console.error("Google login error:", errorResponse);
+      alert("Google login failed. Please try again.");
+    },
+  });
+
   return (
     <>
       <section className="relative z-10 overflow-hidden pt-36 pb-16 md:pb-20 lg:pt-[180px] lg:pb-28">
@@ -67,7 +107,9 @@ const SignupPage = () => {
                 <p className="mb-11 text-center text-base font-medium text-body-color">
                   It’s totally free and super easy
                 </p>
-                <button className="mb-6 flex w-full items-center justify-center rounded-md bg-white p-3 text-base font-medium text-body-color shadow-one hover:text-primary dark:bg-[#242B51] dark:text-body-color dark:shadow-signUp dark:hover:text-white">
+                <button
+                  onClick={handleGoogleSignup}
+                  className="mb-6 flex w-full items-center justify-center rounded-md bg-white p-3 text-base font-medium text-body-color shadow-one hover:text-primary dark:bg-[#242B51] dark:text-body-color dark:shadow-signUp dark:hover:text-white">
                   <span className="mr-3">
                     <svg
                       width="20"
