@@ -56,43 +56,13 @@ const SignupPage = () => {
     },
   });
 
-  const handleGoogleSignup = useGoogleLogin({
-    flow: "auth-code",
-    ux_mode: 'redirect',
-    onSuccess: async (codeResponse) => {
-      try {
-        // Send the authorization code to your backend
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_HOST}/api/login/google`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ googleToken: codeResponse.code }),
-        });
-
-        if (response.ok) {
-          const data = await response.json();
-          Cookies.set("access_token", data.access_token, { secure: true, sameSite: "strict" });
-          Cookies.set('refresh_token', data.refresh_token, { secure: true, sameSite: 'strict' });
-          Cookies.set('email', data.email, { secure: true, sameSite: 'strict' });
-          Cookies.set('houseno', data.house_no, { secure: true, sameSite: 'strict' });
-
-          router.push("/package");
-        } else {
-          const errorData = await response.json();
-          console.log(`Error: ${errorData.message}`);
-          toast.error(`Signup with google failed`);
-        }
-      } catch (error) {
-        console.error("Google signup failed:", error);
-        alert("Google signup failed. Please try again.");
-      }
-    },
-    onError: (errorResponse) => {
-      console.error("Google login error:", errorResponse);
-      alert("Google login failed. Please try again.");
-    },
-  });
+  const handleGoogleLogin = () => {
+    const redirectUri = encodeURIComponent("https://myapp.com/callback");
+    const keycloakGoogleUrl = `${process.env.NEXT_PUBLIC_KEYCLOAK_AUTH_SERVER_URL}/realms/${process.env.NEXT_PUBLIC_KEYCLOAK_REALM}/protocol/openid-connect/auth?client_id=${process.env.NEXT_PUBLIC_KEYCLOAK_CLIENT_ID}&redirect_uri=${process.env.NEXT_PUBLIC_KEYCLOAK_REDIRECT_URI}&response_type=code&kc_idp_hint=google`;
+  
+    window.location.href = keycloakGoogleUrl;
+  };
+  
 
   return (
     <>
@@ -108,7 +78,7 @@ const SignupPage = () => {
                   It’s totally free and super easy
                 </p>
                 <button
-                  onClick={handleGoogleSignup}
+                  onClick={handleGoogleLogin}
                   className="mb-6 flex w-full items-center justify-center rounded-md bg-white p-3 text-base font-medium text-body-color shadow-one hover:text-primary dark:bg-[#242B51] dark:text-body-color dark:shadow-signUp dark:hover:text-white">
                   <span className="mr-3">
                     <svg
