@@ -57,10 +57,20 @@ const SignupPage = () => {
   });
 
   const handleGoogleLogin = () => {
-    const redirectUri = encodeURIComponent("https://myapp.com/callback");
-    const keycloakGoogleUrl = `${process.env.NEXT_PUBLIC_KEYCLOAK_AUTH_SERVER_URL}/realms/${process.env.NEXT_PUBLIC_KEYCLOAK_REALM}/protocol/openid-connect/auth?client_id=${process.env.NEXT_PUBLIC_KEYCLOAK_CLIENT_ID}&redirect_uri=${process.env.NEXT_PUBLIC_KEYCLOAK_REDIRECT_URI}&response_type=code&kc_idp_hint=google`;
+    // const keycloakGoogleUrl = `${process.env.NEXT_PUBLIC_KEYCLOAK_AUTH_SERVER_URL}/realms/${process.env.NEXT_PUBLIC_KEYCLOAK_REALM}/protocol/openid-connect/auth?client_id=${process.env.NEXT_PUBLIC_KEYCLOAK_CLIENT_ID}&redirect_uri=${process.env.NEXT_PUBLIC_KEYCLOAK_REDIRECT_URI}&response_type=code&kc_idp_hint=google`;
   
-    window.location.href = keycloakGoogleUrl;
+    // window.location.href = keycloakGoogleUrl;
+
+    const params = new URLSearchParams({
+      client_id: process.env.NEXT_PUBLIC_KEYCLOAK_CLIENT_ID || '',
+      redirect_uri: process.env.NEXT_PUBLIC_KEYCLOAK_REDIRECT_URI || '',
+      response_type: 'code',
+      scope: 'openid email profile',
+      kc_idp_hint: 'google',
+    });
+
+    const authUrl = `${process.env.NEXT_PUBLIC_KEYCLOAK_AUTH_SERVER_URL}/realms/${process.env.NEXT_PUBLIC_KEYCLOAK_REALM}/protocol/openid-connect/auth?${params.toString()}`;
+    window.location.href = authUrl;
   };
   
 
