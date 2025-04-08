@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation"; // Import useRouter
 import { useFormik } from "formik";
 import * as Yup from 'yup';
 import Cookies from "js-cookie";
+import { toast } from "react-toastify";
 
 const SignupPage = () => {
   const router = useRouter(); // Initialize useRouter
@@ -54,6 +55,24 @@ const SignupPage = () => {
     },
   });
 
+  const handleGoogleLogin = () => {
+    // const keycloakGoogleUrl = `${process.env.NEXT_PUBLIC_KEYCLOAK_AUTH_SERVER_URL}/realms/${process.env.NEXT_PUBLIC_KEYCLOAK_REALM}/protocol/openid-connect/auth?client_id=${process.env.NEXT_PUBLIC_KEYCLOAK_CLIENT_ID}&redirect_uri=${process.env.NEXT_PUBLIC_KEYCLOAK_REDIRECT_URI}&response_type=code&kc_idp_hint=google`;
+
+    // window.location.href = keycloakGoogleUrl;
+
+    const params = new URLSearchParams({
+      client_id: process.env.NEXT_PUBLIC_KEYCLOAK_CLIENT_ID || '',
+      redirect_uri: process.env.NEXT_PUBLIC_KEYCLOAK_REDIRECT_URI || '',
+      response_type: 'code',
+      scope: 'openid email profile',
+      kc_idp_hint: 'google',
+    });
+
+    const authUrl = `${process.env.NEXT_PUBLIC_KEYCLOAK_AUTH_SERVER_URL}/realms/${process.env.NEXT_PUBLIC_KEYCLOAK_REALM}/protocol/openid-connect/auth?${params.toString()}`;
+    window.location.href = authUrl;
+  };
+
+
   return (
     <>
       <section className="relative z-10 overflow-hidden pt-36 pb-16 md:pb-20 lg:pt-[180px] lg:pb-28">
@@ -67,7 +86,9 @@ const SignupPage = () => {
                 <p className="mb-11 text-center text-base font-medium text-body-color">
                   It’s totally free and super easy
                 </p>
-                <button className="mb-6 flex w-full items-center justify-center rounded-md bg-white p-3 text-base font-medium text-body-color shadow-one hover:text-primary dark:bg-[#242B51] dark:text-body-color dark:shadow-signUp dark:hover:text-white">
+                <button
+                  onClick={handleGoogleLogin}
+                  className="mb-6 flex w-full items-center justify-center rounded-md bg-white p-3 text-base font-medium text-body-color shadow-one hover:text-primary dark:bg-[#242B51] dark:text-body-color dark:shadow-signUp dark:hover:text-white">
                   <span className="mr-3">
                     <svg
                       width="20"
