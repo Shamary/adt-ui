@@ -37,6 +37,18 @@ const menuData: Menu[] = [
     path: "/package",
     newTab: false,
   },
+  {
+    id: 5,
+    title: "Terms & Conditions",
+    path: "/terms",
+    newTab: false,
+  },
+  {
+    id: 6,
+    title: "Privacy Policy",
+    path: "/privacy-policy",
+    newTab: false,
+  },
   // {
   //   id: 4,
   //   title: "Pages",
