@@ -1,6 +1,84 @@
+'use client';
 import Link from "next/link";
+import { useRouter } from "next/navigation"; // Import useRouter
+import { useFormik } from "formik";
+import * as Yup from 'yup';
+import Cookies from "js-cookie";
+import { toast } from 'react-toastify'; // Import toast
+import { useAuthStore } from "@/stores/authStore";
 
 const SigninPage = () => {
+  const router = useRouter(); // Initialize useRouter
+  const { isAuthenticated, setIsAuthenticated } = useAuthStore();
+
+  const formik = useFormik({
+    initialValues: {
+      username: '',
+      password: '',
+      rememberMe: false, // Add rememberMe to initialValues
+    },
+    validationSchema: Yup.object({
+      username: Yup.string().email('Invalid email address').required('Required'),
+      password: Yup.string().required('Required'),
+    }),
+    onSubmit: async (values) => {
+      try {
+        // Call the backend API service
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_HOST}/api/login`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ username: values.username, password: values.password }),
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+
+          // Store access_token, email, and houseno in cookies
+          Cookies.set('access_token', data.access_token, { secure: true, sameSite: 'strict' });
+          Cookies.set('refresh_token', data.refresh_token, { secure: true, sameSite: 'strict' });
+          Cookies.set('email', values.username, { secure: true, sameSite: 'strict' });
+          Cookies.set('houseno', data.house_no, { secure: true, sameSite: 'strict' });
+
+          setIsAuthenticated(true);
+
+          // Redirect to the dashboard or another page after successful login
+          if (data.profile_complete) {
+            router.push('/package');
+          }
+          else {
+            router.push('/user-profile');
+          }
+        } else {
+          // Handle API errors
+          const errorData = await response.json();
+          toast.error(`Error: ${errorData.message}`); // Use toast.error instead of alert
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        toast.error('An error occurred while submitting the form.'); // Use toast.error instead of alert
+      }
+    },
+  });
+
+  const handleGoogleLogin = () => {
+    // const keycloakGoogleUrl = `${process.env.NEXT_PUBLIC_KEYCLOAK_AUTH_SERVER_URL}/realms/${process.env.NEXT_PUBLIC_KEYCLOAK_REALM}/protocol/openid-connect/auth?client_id=${process.env.NEXT_PUBLIC_KEYCLOAK_CLIENT_ID}&redirect_uri=${process.env.NEXT_PUBLIC_KEYCLOAK_REDIRECT_URI}&response_type=code&kc_idp_hint=google`;
+
+    // window.location.href = keycloakGoogleUrl;
+
+    const params = new URLSearchParams({
+      client_id: process.env.NEXT_PUBLIC_KEYCLOAK_CLIENT_ID || '',
+      redirect_uri: process.env.NEXT_PUBLIC_KEYCLOAK_REDIRECT_URI || '',
+      response_type: 'code',
+      scope: 'openid email profile',
+      kc_idp_hint: 'google',
+    });
+
+    const authUrl = `${process.env.NEXT_PUBLIC_KEYCLOAK_AUTH_SERVER_URL}/realms/${process.env.NEXT_PUBLIC_KEYCLOAK_REALM}/protocol/openid-connect/auth?${params.toString()}`;
+    window.location.href = authUrl;
+  };
+
   return (
     <>
       <section className="relative z-10 overflow-hidden pt-36 pb-16 md:pb-20 lg:pt-[180px] lg:pb-28">
@@ -14,7 +92,7 @@ const SigninPage = () => {
                 <p className="mb-11 text-center text-base font-medium text-body-color">
                   Login to your account for a faster checkout.
                 </p>
-                <button className="mb-6 flex w-full items-center justify-center rounded-md bg-white p-3 text-base font-medium text-body-color shadow-one hover:text-primary dark:bg-[#242B51] dark:text-body-color dark:shadow-signUp dark:hover:text-white">
+                <button onClick={handleGoogleLogin} className="mb-6 flex w-full items-center justify-center rounded-md bg-white p-3 text-base font-medium text-body-color shadow-one hover:text-primary dark:bg-[#242B51] dark:text-body-color dark:shadow-signUp dark:hover:text-white">
                   <span className="mr-3">
                     <svg
                       width="20"
@@ -23,7 +101,7 @@ const SigninPage = () => {
                       fill="none"
                       xmlns="http://www.w3.org/2000/svg"
                     >
-                      <g clip-path="url(#clip0_95:967)">
+                      <g clipPath="url(#clip0_95:967)">
                         <path
                           d="M20.0001 10.2216C20.0122 9.53416 19.9397 8.84776 19.7844 8.17725H10.2042V11.8883H15.8277C15.7211 12.539 15.4814 13.1618 15.1229 13.7194C14.7644 14.2769 14.2946 14.7577 13.7416 15.1327L13.722 15.257L16.7512 17.5567L16.961 17.5772C18.8883 15.8328 19.9997 13.266 19.9997 10.2216"
                           fill="#4285F4"
@@ -57,20 +135,28 @@ const SigninPage = () => {
                   </p>
                   <span className="hidden h-[1px] w-full max-w-[70px] bg-body-color sm:block"></span>
                 </div>
-                <form>
+                <form onSubmit={formik.handleSubmit}>
                   <div className="mb-8">
                     <label
-                      htmlFor="email"
+                      htmlFor="username"
                       className="mb-3 block text-sm font-medium text-dark dark:text-white"
                     >
                       Your Email
                     </label>
                     <input
-                      type="email"
-                      name="email"
+                      id="username"
+                      name="username"
+                      type="username"
+                      onChange={formik.handleChange}
+                      onBlur={formik.handleBlur}
+                      value={formik.values.username}
                       placeholder="Enter your Email"
-                      className="w-full rounded-md border border-transparent py-3 px-6 text-base text-body-color placeholder-body-color shadow-one outline-none focus:border-primary focus-visible:shadow-none dark:bg-[#242B51] dark:shadow-signUp"
+                      className={`w-full rounded-md border py-3 px-6 text-base text-body-color placeholder-body-color shadow-one outline-none focus:border-primary focus-visible:shadow-none dark:bg-[#242B51] dark:shadow-signUp ${formik.touched.username && formik.errors.username ? 'border-red-500' : 'border-transparent'
+                        }`}
                     />
+                    {formik.touched.username && formik.errors.username ? (
+                      <div className="text-red-500 text-sm">{formik.errors.username}</div>
+                    ) : null}
                   </div>
                   <div className="mb-8">
                     <label
@@ -80,26 +166,38 @@ const SigninPage = () => {
                       Your Password
                     </label>
                     <input
-                      type="password"
+                      id="password"
                       name="password"
+                      type="password"
+                      onChange={formik.handleChange}
+                      onBlur={formik.handleBlur}
+                      value={formik.values.password}
                       placeholder="Enter your Password"
-                      className="w-full rounded-md border border-transparent py-3 px-6 text-base text-body-color placeholder-body-color shadow-one outline-none focus:border-primary focus-visible:shadow-none dark:bg-[#242B51] dark:shadow-signUp"
+                      className={`w-full rounded-md border py-3 px-6 text-base text-body-color placeholder-body-color shadow-one outline-none focus:border-primary focus-visible:shadow-none dark:bg-[#242B51] dark:shadow-signUp ${formik.touched.password && formik.errors.password ? 'border-red-500' : 'border-transparent'
+                        }`}
                     />
+                    {formik.touched.password && formik.errors.password ? (
+                      <div className="text-red-500 text-sm">{formik.errors.password}</div>
+                    ) : null}
                   </div>
                   <div className="mb-8 flex flex-col justify-between sm:flex-row sm:items-center">
-                    <div className="mb-4 sm:mb-0">
+                    {/* <div className="mb-4 sm:mb-0">
                       <label
-                        htmlFor="checkboxLabel"
+                        htmlFor="rememberMe"
                         className="flex cursor-pointer select-none items-center text-sm font-medium text-body-color"
                       >
                         <div className="relative">
                           <input
                             type="checkbox"
-                            id="checkboxLabel"
+                            id="rememberMe"
+                            name="rememberMe"
+                            onChange={formik.handleChange}
+                            onBlur={formik.handleBlur}
+                            checked={formik.values.rememberMe}
                             className="sr-only"
                           />
                           <div className="box mr-4 flex h-5 w-5 items-center justify-center rounded border border-body-color border-opacity-20 dark:border-white dark:border-opacity-10">
-                            <span className="opacity-0">
+                            <span className={`opacity-${formik.values.rememberMe ? '100' : '0'}`}>
                               <svg
                                 width="11"
                                 height="8"
@@ -119,7 +217,7 @@ const SigninPage = () => {
                         </div>
                         Keep me signed in
                       </label>
-                    </div>
+                    </div> */}
                     <div>
                       <a
                         href="#0"
@@ -130,7 +228,10 @@ const SigninPage = () => {
                     </div>
                   </div>
                   <div className="mb-6">
-                    <button className="flex w-full items-center justify-center rounded-md bg-primary py-4 px-9 text-base font-medium text-white transition duration-300 ease-in-out hover:bg-opacity-80 hover:shadow-signUp">
+                    <button
+                      type="submit"
+                      className="flex w-full items-center justify-center rounded-md bg-primary py-4 px-9 text-base font-medium text-white transition duration-300 ease-in-out hover:bg-opacity-80 hover:shadow-signUp"
+                    >
                       Sign in
                     </button>
                   </div>

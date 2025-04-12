@@ -1,6 +1,70 @@
+'use client';
 import Link from "next/link";
+import { useRouter } from "next/navigation"; // Import useRouter
+import { useFormik } from "formik";
+import * as Yup from 'yup';
+import Cookies from "js-cookie";
+import { toast } from "react-toastify";
 
 const SignupPage = () => {
+  const router = useRouter(); // Initialize useRouter
+  const formik = useFormik({
+    initialValues: {
+      email: '',
+      password: '',
+      confirmPassword: '',
+    },
+    validationSchema: Yup.object({
+      email: Yup.string().email('Invalid email address').required('Required'),
+      password: Yup.string().min(8, 'Must be at least 8 characters').required('Required'),
+      confirmPassword: Yup.string()
+        .oneOf([Yup.ref('password'), null], 'Passwords must match')
+        .required('Required'),
+    }),
+    onSubmit: async (values) => {
+      try {
+        // Call the backend API service
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_HOST}/api/request-otp`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ email: values.email, password: values.password }),
+        });
+
+        if (response.ok) {
+          // Store email and password in secure cookies
+          Cookies.set('email', values.email, { secure: true, sameSite: 'strict' });
+          Cookies.set('password', values.password, { secure: true, sameSite: 'strict' });
+
+          // If the API call is successful, redirect to the OTP verification page
+          router.push('/otp-verification');
+        } else {
+          // Handle API errors
+          const errorData = await response.json();
+          alert(`Error: ${errorData.message}`);
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        alert('An error occurred while submitting the form.');
+      }
+    },
+  });
+
+  const handleGoogleLogin = () => {
+    const params = new URLSearchParams({
+      client_id: process.env.NEXT_PUBLIC_KEYCLOAK_CLIENT_ID || '',
+      redirect_uri: process.env.NEXT_PUBLIC_KEYCLOAK_REDIRECT_URI || '',
+      response_type: 'code',
+      scope: 'openid email profile',
+      kc_idp_hint: 'google',
+    });
+
+    const authUrl = `${process.env.NEXT_PUBLIC_KEYCLOAK_AUTH_SERVER_URL}/realms/${process.env.NEXT_PUBLIC_KEYCLOAK_REALM}/protocol/openid-connect/auth?${params.toString()}`;
+    window.location.href = authUrl;
+  };
+
+
   return (
     <>
       <section className="relative z-10 overflow-hidden pt-36 pb-16 md:pb-20 lg:pt-[180px] lg:pb-28">
@@ -12,9 +76,11 @@ const SignupPage = () => {
                   Create your account
                 </h3>
                 <p className="mb-11 text-center text-base font-medium text-body-color">
-                  It’s totally free and super easy
+                  It's totally free and super easy
                 </p>
-                <button className="mb-6 flex w-full items-center justify-center rounded-md bg-white p-3 text-base font-medium text-body-color shadow-one hover:text-primary dark:bg-[#242B51] dark:text-body-color dark:shadow-signUp dark:hover:text-white">
+                <button
+                  onClick={handleGoogleLogin}
+                  className="mb-6 flex w-full items-center justify-center rounded-md bg-white p-3 text-base font-medium text-body-color shadow-one hover:text-primary dark:bg-[#242B51] dark:text-body-color dark:shadow-signUp dark:hover:text-white">
                   <span className="mr-3">
                     <svg
                       width="20"
@@ -23,7 +89,7 @@ const SignupPage = () => {
                       fill="none"
                       xmlns="http://www.w3.org/2000/svg"
                     >
-                      <g clip-path="url(#clip0_95:967)">
+                      <g clipPath="url(#clip0_95:967)">
                         <path
                           d="M20.0001 10.2216C20.0122 9.53416 19.9397 8.84776 19.7844 8.17725H10.2042V11.8883H15.8277C15.7211 12.539 15.4814 13.1618 15.1229 13.7194C14.7644 14.2769 14.2946 14.7577 13.7416 15.1327L13.722 15.257L16.7512 17.5567L16.961 17.5772C18.8883 15.8328 19.9997 13.266 19.9997 10.2216"
                           fill="#4285F4"
@@ -57,98 +123,83 @@ const SignupPage = () => {
                   </p>
                   <span className="hidden h-[1px] w-full max-w-[60px] bg-body-color sm:block"></span>
                 </div>
-                <form>
+                <form onSubmit={formik.handleSubmit}>
                   <div className="mb-8">
-                    <label
-                      htmlFor="name"
-                      className="mb-3 block text-sm font-medium text-dark dark:text-white"
-                    >
-                      {" "}
-                      Full Name{" "}
+                    <label htmlFor="email" className="mb-3 block text-sm font-medium text-dark dark:text-white">
+                      Email
                     </label>
                     <input
-                      type="text"
-                      name="name"
-                      placeholder="Enter your full name"
-                      className="w-full rounded-md border border-transparent py-3 px-6 text-base text-body-color placeholder-body-color shadow-one outline-none focus:border-primary focus-visible:shadow-none dark:bg-[#242B51] dark:shadow-signUp"
-                    />
-                  </div>
-                  <div className="mb-8">
-                    <label
-                      htmlFor="email"
-                      className="mb-3 block text-sm font-medium text-dark dark:text-white"
-                    >
-                      {" "}
-                      Work Email{" "}
-                    </label>
-                    <input
-                      type="email"
+                      id="email"
                       name="email"
+                      type="email"
+                      onChange={formik.handleChange}
+                      onBlur={formik.handleBlur}
+                      value={formik.values.email}
                       placeholder="Enter your Email"
-                      className="w-full rounded-md border border-transparent py-3 px-6 text-base text-body-color placeholder-body-color shadow-one outline-none focus:border-primary focus-visible:shadow-none dark:bg-[#242B51] dark:shadow-signUp"
+                      className={`w-full rounded-md border py-3 px-6 text-base text-body-color placeholder-body-color shadow-one outline-none focus:border-primary focus-visible:shadow-none dark:bg-[#242B51] dark:shadow-signUp ${formik.touched.email && formik.errors.email ? 'border-red-500' : 'border-transparent'
+                        }`}
                     />
+                    {formik.touched.email && formik.errors.email ? (
+                      <div className="text-red-500 text-sm">{formik.errors.email}</div>
+                    ) : null}
                   </div>
                   <div className="mb-8">
-                    <label
-                      htmlFor="password"
-                      className="mb-3 block text-sm font-medium text-dark dark:text-white"
-                    >
-                      {" "}
-                      Your Password{" "}
+                    <label htmlFor="password" className="mb-3 block text-sm font-medium text-dark dark:text-white">
+                      Your Password
                     </label>
                     <input
-                      type="password"
+                      id="password"
                       name="password"
+                      type="password"
+                      onChange={formik.handleChange}
+                      onBlur={formik.handleBlur}
+                      value={formik.values.password}
                       placeholder="Enter your Password"
-                      className="w-full rounded-md border border-transparent py-3 px-6 text-base text-body-color placeholder-body-color shadow-one outline-none focus:border-primary focus-visible:shadow-none dark:bg-[#242B51] dark:shadow-signUp"
+                      className={`w-full rounded-md border py-3 px-6 text-base text-body-color placeholder-body-color shadow-one outline-none focus:border-primary focus-visible:shadow-none dark:bg-[#242B51] dark:shadow-signUp ${formik.touched.password && formik.errors.password ? 'border-red-500' : 'border-transparent'
+                        }`}
                     />
+                    {formik.touched.password && formik.errors.password ? (
+                      <div className="text-red-500 text-sm">{formik.errors.password}</div>
+                    ) : null}
                   </div>
-                  <div className="mb-8 flex">
-                    <label
-                      htmlFor="checkboxLabel"
-                      className="flex cursor-pointer select-none text-sm font-medium text-body-color"
-                    >
-                      <div className="relative">
-                        <input
-                          type="checkbox"
-                          id="checkboxLabel"
-                          className="sr-only"
-                        />
-                        <div className="box mr-4 mt-1 flex h-5 w-5 items-center justify-center rounded border border-body-color border-opacity-20 dark:border-white dark:border-opacity-10">
-                          <span className="opacity-0">
-                            <svg
-                              width="11"
-                              height="8"
-                              viewBox="0 0 11 8"
-                              fill="none"
-                              xmlns="http://www.w3.org/2000/svg"
-                            >
-                              <path
-                                d="M10.0915 0.951972L10.0867 0.946075L10.0813 0.940568C9.90076 0.753564 9.61034 0.753146 9.42927 0.939309L4.16201 6.22962L1.58507 3.63469C1.40401 3.44841 1.11351 3.44879 0.932892 3.63584C0.755703 3.81933 0.755703 4.10875 0.932892 4.29224L0.932878 4.29225L0.934851 4.29424L3.58046 6.95832C3.73676 7.11955 3.94983 7.2 4.1473 7.2C4.36196 7.2 4.55963 7.11773 4.71406 6.9584L10.0468 1.60234C10.2436 1.4199 10.2421 1.1339 10.0915 0.951972ZM4.2327 6.30081L4.2317 6.2998C4.23206 6.30015 4.23237 6.30049 4.23269 6.30082L4.2327 6.30081Z"
-                                fill="#3056D3"
-                                stroke="#3056D3"
-                                strokeWidth="0.4"
-                              />
-                            </svg>
-                          </span>
-                        </div>
-                      </div>
-                      <span>
-                        By creating account means you agree to the
-                        <a href="#0" className="text-primary hover:underline">
-                          {" "}
-                          Terms and Conditions{" "}
-                        </a>
-                        , and our
-                        <a href="#0" className="text-primary hover:underline">
-                          {" "}
-                          Privacy Policy{" "}
-                        </a>
-                      </span>
+                  <div className="mb-8">
+                    <label htmlFor="confirmPassword" className="mb-3 block text-sm font-medium text-dark dark:text-white">
+                      Confirm Password
                     </label>
+                    <input
+                      id="confirmPassword"
+                      name="confirmPassword"
+                      type="password"
+                      onChange={formik.handleChange}
+                      onBlur={formik.handleBlur}
+                      value={formik.values.confirmPassword}
+                      placeholder="Confirm your Password"
+                      className={`w-full rounded-md border py-3 px-6 text-base text-body-color placeholder-body-color shadow-one outline-none focus:border-primary focus-visible:shadow-none dark:bg-[#242B51] dark:shadow-signUp ${formik.touched.confirmPassword && formik.errors.confirmPassword ? 'border-red-500' : 'border-transparent'
+                        }`}
+                    />
+                    {formik.touched.confirmPassword && formik.errors.confirmPassword ? (
+                      <div className="text-red-500 text-sm">{formik.errors.confirmPassword}</div>
+                    ) : null}
+                  </div>
+                  <div className="mb-8">
+                    <p className="text-sm font-medium text-body-color">
+                      By creating account you agree to the
+                      <a href="/terms" className="text-primary hover:underline">
+                        {" "}
+                        Terms and Conditions{" "}
+                      </a>
+                      , and our
+                      <a href="/privacy-policy" className="text-primary hover:underline">
+                        {" "}
+                        Privacy Policy{" "}
+                      </a>
+                    </p>
                   </div>
                   <div className="mb-6">
-                    <button className="flex w-full items-center justify-center rounded-md bg-primary py-4 px-9 text-base font-medium text-white transition duration-300 ease-in-out hover:bg-opacity-80 hover:shadow-signUp">
+                    <button
+                      type="submit"
+                      className="flex w-full items-center justify-center rounded-md bg-primary py-4 px-9 text-base font-medium text-white transition duration-300 ease-in-out hover:bg-opacity-80 hover:shadow-signUp"
+                    >
                       Sign up
                     </button>
                   </div>

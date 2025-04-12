@@ -31,3 +31,11 @@
     @apply opacity-100;
   }
 }
+
+.rdt_Pagination {
+  @apply bg-primary text-white !important;
+}
+
+.rdt_Pagination option {
+  @apply text-black bg-white !important; /* Ensures dark text and visible background */
+}

@@ -20,6 +20,16 @@ module.exports = {
       primary: "#4A6CF7",
       yellow: "#FBB040",
       "body-color": "#959CB1",
+      red: {
+        500: "#ef4444", // Tailwind's default red-500
+      },
+      green: {
+        500: "#48bb78",
+      },
+      gray: {
+        100: "#f5f5f5",
+        500: "#9e9e9e",
+      }
     },
     screens: {
       xs: "450px",
