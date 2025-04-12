@@ -1,13 +1,17 @@
 import { redirect } from 'next/navigation';
 import CallbackHandler from './CallBackHandler';
 
-export default async function CallbackPage({
-    searchParams,
-}: {
-    searchParams: { [key: string]: string | string[] | undefined };
-}) {
-    const code = searchParams.code as string;
-    const error = searchParams.error as string;
+interface CallbackPageProps {
+    searchParams: {
+        code?: string;
+        error?: string;
+        [key: string]: string | string[] | undefined;
+    };
+}
+
+export default async function CallbackPage({ searchParams }: CallbackPageProps) {
+    const code = searchParams.code;
+    const error = searchParams.error;
 
     if (error) {
         redirect(`/signin?error=${encodeURIComponent(error)}`);
@@ -32,8 +36,6 @@ export default async function CallbackPage({
         }
 
         const data = await response.json();
-
-        // Pass data to a Client Component to handle cookies + redirect
         return <CallbackHandler authData={data} />;
 
     } catch (err) {
