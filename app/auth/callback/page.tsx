@@ -2,14 +2,16 @@ import { redirect } from 'next/navigation';
 import CallbackHandler from './CallBackHandler';
 
 interface CallbackPageProps {
-    searchParams: {
-        code?: string;
-        error?: string;
-        [key: string]: string | string[] | undefined;
-    };
+  searchParams?: {
+    code?: string;
+    error?: string;
+    [key: string]: string | string[] | undefined;
+  };
 }
 
-export default async function CallbackPage({ searchParams }: CallbackPageProps) {
+export default async function CallbackPage({ 
+  searchParams = {}  // Provide default value
+}: CallbackPageProps = {}) {
     const code = searchParams.code;
     const error = searchParams.error;
 
