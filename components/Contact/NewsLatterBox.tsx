@@ -5,7 +5,7 @@ const NewsLatterBox = () => {
       data-wow-delay=".2s"
     >
       <h3 className="mb-4 text-2xl font-bold leading-tight text-black dark:text-white">
-        We're here to help! Whether you have a question about our services, need assistance with a shipment, or simply want to get in touch — we’d love to hear from you.
+        We're here to help! Whether you have a question about our services, need assistance with a shipment, or simply want to get in touch — we would love to hear from you.
       </h3>
       <p className="mb-11 border-b border-body-color border-opacity-25 pb-11 text-base font-medium leading-relaxed text-body-color dark:border-white dark:border-opacity-25">
         📞 Phone: +1 (876) 250-5681
@@ -13,7 +13,7 @@ const NewsLatterBox = () => {
         📧 Email: <a href="mailto:contact@adtshipping.com" className="hover:underline">contact@adtshipping.com</a>
       </p>
       <p className="text-center text-base font-medium leading-relaxed text-body-color">
-        Feel free to reach out and we'll get back to you as soon as possible.
+        Feel free to reach out and we'll get back to you as soon as possible.
       </p>
       <div className="absolute top-0 left-0 z-[-1]">
         <svg
