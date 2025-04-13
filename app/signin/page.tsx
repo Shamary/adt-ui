@@ -30,6 +30,7 @@ const SigninPage = () => {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({ username: values.username, password: values.password }),
+          credentials: 'include'
         });
 
         if (response.ok) {
