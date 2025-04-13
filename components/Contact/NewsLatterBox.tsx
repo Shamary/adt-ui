@@ -13,7 +13,7 @@ const NewsLatterBox = () => {
         📧 Email: <a href="mailto:contact@adtshipping.com" className="hover:underline">contact@adtshipping.com</a>
       </p>
       <p className="text-center text-base font-medium leading-relaxed text-body-color">
-        Feel free to reach out and we’ll get back to you as soon as possible.
+        Feel free to reach out and we'll get back to you as soon as possible.
       </p>
       <div className="absolute top-0 left-0 z-[-1]">
         <svg
