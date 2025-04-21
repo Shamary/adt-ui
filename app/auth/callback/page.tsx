@@ -20,7 +20,9 @@ export default async function CallbackPage({
     }
 
     if (!code) {
-        redirect('/signin?error=missing_code');
+        // redirect('/signin?error=missing_code');
+
+        console.log(`======NO CODE ${code}`)
     }
 
     try {
