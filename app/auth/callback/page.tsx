@@ -16,7 +16,7 @@ export default async function CallbackPage({
     const error = searchParams.error;
 
     if (error) {
-        redirect(`/signin?error=${encodeURIComponent(error)}`);
+        // redirect(`/signin?error=${encodeURIComponent(error)}`);
     }
 
     if (!code) {
@@ -44,6 +44,6 @@ export default async function CallbackPage({
 
     } catch (err) {
         console.error('Authentication error:', err);
-        redirect('/signin?error=auth_failed');
+        // redirect('/signin?error=auth_failed');
     }
 }
