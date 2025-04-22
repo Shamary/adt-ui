@@ -26,16 +26,6 @@ const nextConfig = {
           },
         ],
       },
-      // Add exception for auth callback
-      {
-        source: "/auth/callback",
-        headers: [
-          {
-            key: "Cross-Origin-Opener-Policy",
-            value: "unsafe-none", // Less restrictive
-          },
-        ],
-      },
     ];
   },
 };
