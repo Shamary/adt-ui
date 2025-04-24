@@ -127,7 +127,7 @@ const TermsAndConditionsPage = () => {
                           description={
                             <>
                               <strong>Email:</strong> contact@adtshipping.com<br />
-                              <strong>Phone:</strong> (876) XXX-XXXX<br />
+                              <strong>Phone:</strong> (876) 250-5681<br />
                               <strong>Website:</strong> <a href="https://www.adtshipping.com" className="text-primary">www.adtshipping.com</a>
                             </>
                           } 
