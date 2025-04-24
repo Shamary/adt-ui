@@ -10,16 +10,19 @@ const Hero = () => {
 
   return (
     <>
-      <section
-        id="home"
-        className="relative z-10 overflow-hidden pt-[120px] pb-16 md:pt-[150px] md:pb-[120px] xl:pt-[180px] xl:pb-[160px] 2xl:pt-[210px] 2xl:pb-[200px]"
-      >
+<section
+  id="home"
+  className="relative z-10 overflow-hidden pt-[60px] pb-8 md:pt-[75px] md:pb-[30px] xl:pt-[90px] xl:pb-[40px] 2xl:pt-[95px] 2xl:pb-[30px]"
+>
+
+
         <div className="container mx-auto px-4 py-10">
           {/* Flex container for heading and image */}
           <div className="flex flex-col md:flex-row md:space-x-6">
             {/* Left Column: Heading */}
-            <div className="md:w-1/4 flex items-center">
-              <h1 className="text-3xl font-bold leading-tight text-white sm:text-4xl md:text-5xl">
+            <div className="md:w-1/4 flex items-center mt-8">
+            <h1 className="text-5xl font-bold leading-tight text-white sm:text-6xl md:text-7xl">
+
                 <span className="text-white font-extrabold">A</span>LWAYS <br /><br />
                 <span className="text-white font-extrabold">D</span>ELIVER <br /><br />
                 on <span className="text-white font-extrabold">T</span>IME
@@ -27,12 +30,12 @@ const Hero = () => {
             </div>
 
             {/* Right Column: Image */}
-            <div className="md:w-1/2 flex">
+            <div className="md:w-1/2 flex mt-8">
               <Image
                 src="/images/hero/hero1.png"
                 alt="Shipping Illustration"
-                width={600}
-                height={400}
+                width={650}
+                height={500}
                 className="rounded-lg shadow-lg"
               />
             </div>
@@ -49,16 +52,102 @@ const Hero = () => {
             </button>
           </div>
         </div>
+        <div className="container">
+  <div className="border-b border-white/[.15] dark:border-white/[.15] my-10" />
+</div>
 
-        <div className="w-full">
-          <Image
-            src="/images/hero/hero2.jpg"
-            alt="Full Width Image"
-            width={4096}
-            height={1048}
-            className="w-full object-cover"
-          />
-        </div>
+
+<div className="w-full max-w-6xl mx-auto text-center">
+<h1 className="text-5xl md:text-6xl font-bold text-white mt-6 px-4">
+How It Works
+</h1>
+
+</div>
+        <div className="w-full py-12">
+  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto px-4 text-center">
+    {/* Step 1 */}
+    <div className="bg-white text-black p-6 rounded-lg shadow-md">
+      <img src="/images/hero/signup.png" alt="Sign Up" className="mx-auto h-20 mb-4" />
+            <h2 className="text-4xl font-bold mb-2">1</h2>
+      <h3 className="text-2xl font-bold mb-2">Sign Up</h3>
+      <p className="text-md">
+        Get started with ADT today and enjoy your free personalized US shipping
+        address along with a unique mailbox number tailored just for you!
+      </p>
+    </div>
+
+    {/* Step 2 */}
+    <div className="bg-white text-black p-6 rounded-lg shadow-md">
+      <img src="/images/hero/shopping-cart.png" alt="Shop" className="mx-auto h-20 mb-4" />
+      <h2 className="text-4xl font-bold mb-2">2</h2>
+      <h3 className="text-2xl font-bold mb-2">Shop</h3>
+      <p className="text-md">
+        Shop from stores anywhere in the world and have your purchases delivered
+        to your personal ADT address — or let your friends and family send
+        packages straight to your secure ADT mailbox.
+      </p>
+    </div>
+
+    {/* Step 3 */}
+    <div className="bg-white text-black p-6 rounded-lg shadow-md">
+      <img src="/images/hero/receiving.png" alt="Received" className="mx-auto h-20 mb-4" />
+            <h2 className="text-4xl font-bold mb-2">3</h2>
+      <h3 className="text-2xl font-bold mb-2">Received</h3>
+      <p className="text-md">
+        ADT receives your packages at our US warehouse and promptly notifies you,
+        allowing you to upload your invoice with ease.
+      </p>
+    </div>
+
+    {/* Step 4 */}
+    <div className="bg-white text-black p-6 rounded-lg shadow-md">
+      <img src="/images/hero/delivery-truck.png" alt="Delivery" className="mx-auto h-20 mb-4" />
+      
+      <h2 className="text-4xl font-bold mb-2">4</h2>
+      <h3 className="text-2xl font-bold mb-2">Delivery</h3>
+      <p className="text-md">
+        You will be notified once your package is ready. Then, click the link
+        provided to schedule your delivery at your convenience.
+      </p>
+    </div>
+  </div>
+</div>
+<div className="text-center"><button onClick={() => router.push('/signup')} className="inline-block rounded-md mt-5 bg-yellow py-3 px-6 text-white text-lg font-semibold transition hover:bg-yellow-600 shadow-lg">
+              Sign Up Now
+            </button></div>
+
+
+        <div className="container">
+  <div className="border-b border-white/[.15] dark:border-white/[.15] my-10" />
+</div>
+
+
+
+        <div className="w-full max-w-6xl mx-auto text-center">
+        <h1 className="text-5xl md:text-6xl font-bold text-white mt-6 px-4">
+  No Credit Card? No Problem!
+</h1>
+
+</div>
+<div className="w-full max-w-[100rem] mx-auto mt-6">
+  <Image
+    src="/images/hero/hero2.jpg"
+    alt="Full Width Image"
+    width={4096}
+    height={1048}
+    className="w-full object-cover"
+  />
+</div>
+<div className="w-full max-w-6xl mx-auto text-center">
+  <p className="text-3xl md:text-3xl text-white mt-4">
+    Contact us, and we&apos;ll facilitate your purchase with our credit card.
+    Convenient and hassle-free shopping made easy!
+  </p>
+</div>
+<div className="container">
+  <div className="border-b border-white/[.15] dark:border-white/[.15] my-10" />
+</div>
+
 
         <div className="absolute top-0 right-0 z-[-1] opacity-30 lg:opacity-100">
           <svg
