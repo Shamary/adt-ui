@@ -140,7 +140,7 @@ How It Works
 </div>
 <div className="w-full max-w-6xl mx-auto text-center">
   <p className="text-3xl md:text-3xl text-white mt-4">
-    Contact us, and we'll facilitate your purchase with our credit card.
+    Contact us, and we&apos;ll facilitate your purchase with our credit card.
     Convenient and hassle-free shopping made easy!
   </p>
 </div>
