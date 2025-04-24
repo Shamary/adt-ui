@@ -24,44 +24,55 @@ const AboutSectionOne = () => {
           <div className="-mx-4 flex flex-wrap items-center">
             <div className="w-full px-4 lg:w-1/2">
               <SectionTitle
-                title="Crafted for Startup, SaaS and Business Sites."
-                paragraph="The main ‘thrust’ is to focus on educating attendees on how to best protect highly vulnerable business applications with interactive panel discussions and roundtables."
-                mb="44px"
+                title="How it All Works"
+                paragraph="We’re a fully online shipping company designed for simplicity. From sign-up to delivery, everything is handled digitally. 
+                "
+                
+                mb="4px"
               />
-
-              {/* <div
+  <SectionTitle
+                title=""
+                paragraph="
+                Just shop at your favorite U.S. stores, and we’ll handle the rest—no paperwork, no customs stress. Your packages are delivered straight to your door, hassle-free."
+                
+                mb="8px"
+              />
+              <br></br>
+              { <div
                 className="wow fadeInUp mb-12 max-w-[570px] lg:mb-0"
                 data-wow-delay=".15s"
               >
                 <div className="mx-[-12px] flex flex-wrap">
                   <div className="w-full px-3 sm:w-1/2 lg:w-full xl:w-1/2">
-                    <List text="Premium quality" />
-                    <List text="Tailwind CSS" />
-                    <List text="Use for lifetime" />
+                  <List text="Fast & on-time delivery" />
+<List text="Reliable service you can trust" />
+<List text="Convenient online experience" />
                   </div>
 
                   <div className="w-full px-3 sm:w-1/2 lg:w-full xl:w-1/2">
-                    <List text="Next.js" />
-                    <List text="Rich documentation" />
-                    <List text="Developer friendly" />
+                  <List text="Transparent tracking and updates" />
+<List text="Affordable shipping rates" />
+<List text="Door-to-door delivery support" />
                   </div>
                 </div>
-              </div> */}
+              </div> }
             </div>
 
-            {/* <div className="w-full px-4 lg:w-1/2">
+            { <div className="w-full px-4 lg:w-1/2">
               <div
                 className="wow fadeInUp relative mx-auto aspect-[25/24] max-w-[500px] lg:mr-0"
                 data-wow-delay=".2s"
               >
                 <Image
-                  src="/images/about/about-image.svg"
+                 src="/images/aboutImg3.png"
                   alt="about-image"
-                  fill
+                  width={2304}
+                  height={2304}
+                 
                   className="mx-auto max-w-full lg:mr-0"
                 />
               </div>
-            </div> */}
+            </div> }
           </div>
         </div>
       </div>

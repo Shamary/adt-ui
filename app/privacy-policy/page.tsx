@@ -141,7 +141,7 @@ const PrivacyPolicyPage = () => {
                                                 <div className="mt-8 rounded-md bg-primary bg-opacity-10 p-6">
                                                     <h3 className="mb-3 text-xl font-semibold text-primary">Contact Us</h3>
                                                     <p className="text-base text-body-color">
-                                                        For inquiries, reach out via email at <a href="mailto:contact@adtshipping.com" className="text-primary">contact@adtshipping.com</a> or call us at (876) XXX-XXXX.
+                                                        For inquiries, reach out via email at <a href="mailto:contact@adtshipping.com" className="text-primary">contact@adtshipping.com</a> or call us at (876) 250-5681.
                                                     </p>
                                                 </div>
                                             </div>

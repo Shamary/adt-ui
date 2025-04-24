@@ -5,7 +5,7 @@ const NewsLatterBox = () => {
       data-wow-delay=".2s"
     >
       <h3 className="mb-4 text-2xl font-bold leading-tight text-black dark:text-white">
-        We&apos;re here to help! Whether you have a question about our services, need assistance with a shipment, or simply want to get in touch — we would love to hear from you.
+        We’re here for you! <br></br>If you have any questions about our services, need help with a shipment, or just want to reach out, we’d love to chat.<br></br> <br></br>Don’t hesitate to get in touch; we’re eager to assist you!
       </h3>
       <p className="mb-11 border-b border-body-color border-opacity-25 pb-11 text-base font-medium leading-relaxed text-body-color dark:border-white dark:border-opacity-25">
         📞 Phone: +1 (876) 250-5681
