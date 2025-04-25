@@ -1,5 +1,6 @@
 'use client';
 
+
 import { useRouter } from 'next/navigation';
 import Link from "next/link";
 import Image from "next/image";
@@ -21,13 +22,14 @@ const Hero = () => {
           <div className="flex flex-col md:flex-row md:space-x-6">
             {/* Left Column: Heading */}
             <div className="md:w-1/4 flex items-center mt-8">
-            <h1 className="text-5xl font-bold leading-tight text-white sm:text-6xl md:text-7xl">
+  <h1 className="text-white text-5xl sm:text-6xl md:text-7xl font-bold leading-tight text-center">
+    <span className="text-white font-extrabold text-yellow-400">A</span>lways<br />
+    <span className="text-white font-extrabold text-yellow-400">D</span>eliver <span className="italic text-white text-6xl font-light">on</span><br />
+    <span className="text-white font-extrabold text-yellow-400">T</span>ime
+  </h1>
+</div>
 
-                <span className="text-white font-extrabold">A</span>LWAYS <br /><br />
-                <span className="text-white font-extrabold">D</span>ELIVER <br /><br />
-                on <span className="text-white font-extrabold">T</span>IME
-              </h1>
-            </div>
+
 
             {/* Right Column: Image */}
             <div className="md:w-1/2 flex mt-8">
@@ -92,7 +94,7 @@ How It Works
     <div className="bg-white text-black p-6 rounded-lg shadow-md">
       <img src="/images/hero/receiving.png" alt="Received" className="mx-auto h-20 mb-4" />
             <h2 className="text-4xl font-bold mb-2">3</h2>
-      <h3 className="text-2xl font-bold mb-2">Received</h3>
+      <h3 className="text-2xl font-bold mb-2">Process</h3>
       <p className="text-md">
         ADT receives your packages at our US warehouse and promptly notifies you,
         allowing you to upload your invoice with ease.
@@ -140,7 +142,7 @@ How It Works
 </div>
 <div className="w-full max-w-6xl mx-auto text-center">
   <p className="text-3xl md:text-3xl text-white mt-4">
-    Contact us, and we'll facilitate your purchase with our credit card.
+    Contact us and we'll facilitate your purchase with our credit card.
     Convenient and hassle-free shopping made easy!
   </p>
 </div>
@@ -148,7 +150,9 @@ How It Works
   <div className="border-b border-white/[.15] dark:border-white/[.15] my-10" />
 </div>
 
-
+<p className="text-center text-white text-xl mb-2">
+  <strong>All rates include delivery to your door<br></br> No hidden fees!</strong>
+</p>
         <div className="absolute top-0 right-0 z-[-1] opacity-30 lg:opacity-100">
           <svg
             width="450"

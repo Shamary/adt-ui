@@ -15,7 +15,13 @@ const Rates: React.FC<RatesProps> = ({ rates }) => {
     return (
         <div className="overflow-x-auto">
   {/* Title centered above the table */}
-  <h2 className="text-5xl font-semibold text-center mb-8">Rates</h2>
+  
+  <h2 className="text-4xl font-semibold text-center mb-2">
+  Rates
+  <span className="ml-3 bg-green-500 text-white text-xl px-3 py-1 rounded-md align-middle">
+    Delivery Included
+  </span>
+</h2>
   
   <div className="w-full max-w-[85%] mx-auto">
   <table className="w-full border-none">
@@ -37,6 +43,11 @@ const Rates: React.FC<RatesProps> = ({ rates }) => {
       </tbody>
     </table>
   </div>
+  <p className="text-center text-white text-xl mb-2">
+  <small className="text-center text-sm text-gray-400 italic">
+  *Delivery included for Kingston, St. Andrew, Portmore & Spanish Town
+</small>
+</p>
 </div>
 
     );

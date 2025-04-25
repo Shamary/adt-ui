@@ -47,7 +47,7 @@ const AboutSectionTwo = () => {
               {/* Step 3 */}
               <div className="mb-9">
                 <h3 className="mb-2 text-2xl font-bold text-black dark:text-white">
-                  3 – Received
+                  3 – Processed
                 </h3>
                 <p className="text-base font-medium leading-relaxed text-body-color dark:text-white/80">
                   ADT receives your packages at our US warehouse and promptly notifies you, allowing you to upload your invoice with ease.
