@@ -49,6 +49,12 @@ const menuData: Menu[] = [
     path: "/privacy-policy",
     newTab: false,
   },
+  {
+    id: 7,
+    title: "Profile",
+    path: "/user-profile",
+    newTab: false,
+  },
   // {
   //   id: 4,
   //   title: "Pages",
