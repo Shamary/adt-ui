@@ -21,6 +21,10 @@ const Header = () => {
     if (item.title === "Packages" && !isAuthenticated) {
       return false; // Hide Packages if not logged in
     }
+
+    if (item.title === "Profile" && !isAuthenticated) {
+      return false; // Hide user profile if not logged in
+    }
     return true; // Keep all other items
   });
 
