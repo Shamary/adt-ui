@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import DataTable from "react-data-table-component";
 import dayjs from "dayjs";
+import { PackageStatus } from "@/common/constants";
 
 const columns = [
   { name: "House", selector: (row) => row.aerotrack, sortable: true },
@@ -89,10 +90,11 @@ const PackageList = () => {
           onChange={handleStatusChange}
         >
           <option value="">All Status</option>
-          <option value="Arrived">Arrived</option>
-          <option value="Processed">Processed</option>
-          <option value="Ready for Pickup">Ready for Pickup</option>
-          <option value="Delivered">Delivered</option>
+          <option value={PackageStatus.RECEIVED}>{PackageStatus.RECEIVED}</option>
+          <option value={PackageStatus.RECEIVED_AT_LOCAL_OFFICE}>{PackageStatus.RECEIVED_AT_LOCAL_OFFICE}</option>
+          <option value={PackageStatus.IN_TRANSIT}>{PackageStatus.IN_TRANSIT}</option>
+          <option value={PackageStatus.SCHEDULE_FOR_DELIVERY}>{PackageStatus.SCHEDULE_FOR_DELIVERY}</option>
+          <option value={PackageStatus.DELIVERED}>{PackageStatus.DELIVERED}</option>
         </select>
         <input
           type="date"
