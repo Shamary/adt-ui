@@ -3,72 +3,114 @@
 import React, { useState, useEffect } from "react";
 import DataTable from "react-data-table-component";
 import dayjs from "dayjs";
+import { DatePicker, Button } from "antd";
+import { PackageStatus } from "@/common/constants";
+import Cookies from "js-cookie";
+import { toast } from "react-toastify";
+import apiClient from "@/utils/apiClient";
 
 const columns = [
-  { name: "House", selector: (row) => row.aerotrack, sortable: true },
-  { name: "Courier No.", selector: (row) => row.courierNo, sortable: true },
-  { name: "Store", selector: (row) => row.store, sortable: true },
+  { name: "Tracking Number", selector: (row) => row.trackingNumber, sortable: true },
   { name: "Description", selector: (row) => row.description, sortable: true },
-  { name: "Status", selector: (row) => row.status, sortable: true },
-  { name: "Last Updated", selector: (row) => row.lastUpdated, sortable: true },
-];
-
-const initialData = [
-  // { aerotrack: "AT12345", courierNo: "CN987654", store: "Amazon", description: "Laptop", status: "Arrived", lastUpdated: "12/02/2025" },
-  // { aerotrack: "AT54321", courierNo: "CN123456", store: "eBay", description: "Phone", status: "Processed", lastUpdated: "10/02/2025" },
-  // { aerotrack: "AT67890", courierNo: "CN567890", store: "BestBuy", description: "Headphones", status: "Ready for Pickup", lastUpdated: "08/02/2025" },
+  { name: "Weight (lb)", selector: (row) => row.weight, sortable: true },
+  { name: "Shipper", selector: (row) => row.shipper, sortable: true },
+  { name: "House Number", selector: (row) => row.houseNumber, sortable: true },
+  {
+    name: "Date Received",
+    selector: (row) => dayjs(row.dateReceived).format("MMM D, YYYY h:mm A"),
+    sortable: true
+  },
+  {
+    name: "Status",
+    selector: (row) => row.status,
+    sortable: true,
+    cell: (row) => (
+      <span className={`px-2 py-1 rounded ${row.status === PackageStatus.DELIVERED ? 'bg-green-500' :
+        row.status === PackageStatus.IN_TRANSIT ? 'bg-blue-500' :
+          'bg-gray-500'
+        }`}>
+        {row.status}
+      </span>
+    )
+  },
 ];
 
 const PackageList = () => {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
-  const [dateFilter, setDateFilter] = useState("");
-  const [filteredData, setFilteredData] = useState(initialData);
+  const [dateFilter, setDateFilter] = useState<dayjs.Dayjs | null>(null);
+  const [showAll, setShowAll] = useState(true);
+  const [packages, setPackages] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Simulate API call for package updates
-    fetchPackageUpdates();
-  }, []);
+    fetchPackages();
+  }, [dateFilter]);
 
-  const fetchPackageUpdates = () => {
-    // Placeholder for API integration to fetch updated package statuses
-    console.log("Fetching package updates...");
+  const fetchPackages = async () => {
+    try {
+      setLoading(true);
+      const houseno = Cookies.get("houseno");
+      if (!houseno) {
+        throw new Error("House number not found in cookies");
+      }
+
+      // Only include date parameter if we're not showing all AND dateFilter exists
+      const dateParam = !showAll && dateFilter
+        ? `&date=${dateFilter.format("YYYY-MM-DD")}`
+        : '';
+
+      const response = await apiClient(`/api/package?houseno=${houseno}${dateParam}`);
+
+      if (!response.ok) {
+        toast.error("Failed to get packages");
+      }
+
+      const data = await response.json();
+      setPackages(data.packages || []);
+    } catch (error) {
+      toast.error("Failed to get packages");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleSearch = (e) => {
     setSearch(e.target.value);
-    filterData(e.target.value, statusFilter, dateFilter);
   };
 
   const handleStatusChange = (e) => {
     setStatusFilter(e.target.value);
-    filterData(search, e.target.value, dateFilter);
   };
 
-  const handleDateChange = (e) => {
-    setDateFilter(e.target.value);
-    filterData(search, statusFilter, e.target.value);
-  };
-
-  const filterData = (searchTerm, status, date) => {
-    let filtered = initialData;
-
-    if (searchTerm) {
-      filtered = filtered.filter((pkg) =>
-        Object.values(pkg).some((val) => val.toString().toLowerCase().includes(searchTerm.toLowerCase()))
-      );
-    }
-
-    if (status) {
-      filtered = filtered.filter((pkg) => pkg.status === status);
-    }
+  const handleDateChange = (date) => {
+    // setDateFilter(date);
+    // setShowAll(false); // Switch to date-filtered view when date is selected
 
     if (date) {
-      filtered = filtered.filter((pkg) => dayjs(pkg.lastUpdated, "DD/MM/YYYY").isSame(dayjs(date), "day"));
+      setDateFilter(date);
+      setShowAll(false);
     }
-
-    setFilteredData(filtered);
   };
+
+  const toggleShowAll = () => {
+    setShowAll(!showAll);
+    setDateFilter(null);
+  };
+
+  const filteredData = packages.filter((pkg) => {
+    const matchesSearch = search
+      ? Object.values(pkg).some((val) =>
+        val?.toString().toLowerCase().includes(search.toLowerCase())
+      )
+      : true;
+
+    const matchesStatus = statusFilter
+      ? pkg.status === statusFilter
+      : true;
+
+    return matchesSearch && matchesStatus;
+  });
 
   return (
     <div className="p-6 bg-gray-900 text-white min-h-screen mt-52">
@@ -89,17 +131,32 @@ const PackageList = () => {
           onChange={handleStatusChange}
         >
           <option value="">All Status</option>
-          <option value="Arrived">Arrived</option>
-          <option value="Processed">Processed</option>
-          <option value="Ready for Pickup">Ready for Pickup</option>
-          <option value="Delivered">Delivered</option>
+          {Object.values(PackageStatus).map((status) => (
+            <option key={status} value={status}>
+              {status}
+            </option>
+          ))}
         </select>
-        <input
-          type="date"
-          className="p-2 bg-gray-800 text-white border border-gray-700 rounded"
-          value={dateFilter}
+        <DatePicker
+          className="p-2 bg-gray-800 border border-gray-700 rounded w-40"
+          value={showAll ? null : dateFilter}
           onChange={handleDateChange}
+          format="YYYY-MM-DD"
+          allowClear={false} // Disable the clear button
+          disabled={showAll}
+          onPanelChange={(value) => {
+            if (!showAll) {
+              setDateFilter(value);
+            }
+          }}
         />
+        <Button
+          type="primary"
+          className="bg-blue-600"
+          onClick={toggleShowAll}
+        >
+          {showAll ? "Show Date Filter" : "Show All Packages"}
+        </Button>
       </div>
 
       {/* Data Table */}
@@ -109,7 +166,12 @@ const PackageList = () => {
         pagination
         highlightOnHover
         striped
-        noDataComponent={<p className="py-6 text-gray-400">There are no packages to display</p>}
+        progressPending={loading}
+        noDataComponent={
+          <p className="py-6 text-gray-400">
+            {loading ? "Loading packages..." : "No packages found"}
+          </p>
+        }
         customStyles={{
           headCells: {
             style: { backgroundColor: "#1E1E1E", color: "white" },
