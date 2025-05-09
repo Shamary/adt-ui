@@ -25,8 +25,6 @@ export default function CallbackHandler({ authData }: { authData: AuthData }) {
             Cookies.set('houseno', authData.house_no, { secure: true, sameSite: 'strict' });
         }
 
-        Cookies.set('houseno', authData.house_no, { secure: true, sameSite: 'strict' });
-
         // Redirect based on profile completion
         router.push(authData.profile_complete ? '/package' : '/user-profile');
     }, [authData, router]);
