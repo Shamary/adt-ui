@@ -60,14 +60,16 @@ const PackageList = () => {
         ? `&date=${dateFilter.format("YYYY-MM-DD")}`
         : '';
 
-      const response = await apiClient(`/api/package?houseno=${houseno}${dateParam}`);
+      // const response = await apiClient(`/api/package?houseno=${houseno}${dateParam}`);
+
+      const response = await apiClient(`/api/package?houseno=${houseno}`);
 
       if (!response.ok) {
         toast.error("Failed to get packages");
       }
 
       const data = await response.json();
-      setPackages(data.packages || []);
+      setPackages(data || []);
     } catch (error) {
       toast.error("Failed to get packages");
     } finally {
@@ -117,7 +119,7 @@ const PackageList = () => {
       <h1 className="text-2xl font-semibold mb-4">My Packages</h1>
 
       {/* Filters */}
-      <div className="flex flex-wrap gap-4 mb-4">
+      {/* <div className="flex flex-wrap gap-4 mb-4">
         <input
           type="text"
           placeholder="Search packages..."
@@ -157,7 +159,7 @@ const PackageList = () => {
         >
           {showAll ? "Show Date Filter" : "Show All Packages"}
         </Button>
-      </div>
+      </div> */}
 
       {/* Data Table */}
       <DataTable
