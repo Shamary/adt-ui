@@ -6,10 +6,12 @@ import * as Yup from 'yup';
 import Cookies from "js-cookie";
 import { toast } from 'react-toastify'; // Import toast
 import { useAuthStore } from "@/stores/authStore";
+import { getUserRoles } from "@/utils/auth";
+import { Roles } from "@/common/constants";
 
 const SigninPage = () => {
   const router = useRouter(); // Initialize useRouter
-  const { isAuthenticated, setIsAuthenticated } = useAuthStore();
+  const { isAuthenticated, setIsAuthenticated, setIsAdmin } = useAuthStore();
 
   const formik = useFormik({
     initialValues: {
@@ -44,6 +46,16 @@ const SigninPage = () => {
 
           setIsAuthenticated(true);
 
+
+          let roles = getUserRoles();
+
+          if (roles.includes(Roles.ADMIN)) {
+            setIsAdmin(true);
+          }
+          else
+          {
+            setIsAdmin(false);
+          }
           // Redirect to the dashboard or another page after successful login
           if (data.profile_complete) {
             router.push('/package');
