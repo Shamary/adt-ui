@@ -2,7 +2,7 @@
 import Cookies from 'js-cookie';
 
 export const getUserRoles = () => {
-    const token = Cookies.get('access-token');
+    const token = Cookies.get('access_token');
     if (!token) return [];
 
     try {

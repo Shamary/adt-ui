@@ -9,6 +9,7 @@ import Cookies from "js-cookie";
 import { toast } from "react-toastify";
 import apiClient from "@/utils/apiClient";
 import { jwtDecode } from "jwt-decode"; // Import jwtDecode
+import { useAuthStore } from "@/stores/authStore";
 
 const { Option } = Select; // Destructure Option from Select
 
@@ -46,23 +47,28 @@ const PackageList = () => {
   const [showAll, setShowAll] = useState(true);
   const [packages, setPackages] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [isAdmin, setIsAdmin] = useState(false);
+  // const [isAdmin, setIsAdmin] = useState(false);
+  const { isAdmin } = useAuthStore();
+
+  // useEffect(() => {
+  //   // Check user role on component mount
+  //   const accessToken = Cookies.get("access_token");
+  //   if (accessToken) {
+  //     try {
+  //       const decodedToken: any = jwtDecode(accessToken);
+  //       if (decodedToken.realm_access?.roles.includes("ADMIN")) {
+  //         setIsAdmin(true);
+  //       }
+  //     } catch (error) {
+  //       console.error("Failed to decode access token:", error);
+  //     }
+  //   }
+  //   fetchPackages();
+  // }, [dateFilter, isAdmin]); // Re-fetch if isAdmin changes
 
   useEffect(() => {
-    // Check user role on component mount
-    const accessToken = Cookies.get("access_token");
-    if (accessToken) {
-      try {
-        const decodedToken: any = jwtDecode(accessToken);
-        if (decodedToken.realm_access?.roles.includes("ADMIN")) {
-          setIsAdmin(true);
-        }
-      } catch (error) {
-        console.error("Failed to decode access token:", error);
-      }
-    }
     fetchPackages();
-  }, [dateFilter, isAdmin]); // Re-fetch if isAdmin changes
+  }, [dateFilter]); // Re-fetch if isAdmin changes
 
   const fetchPackages = async () => {
     try {
