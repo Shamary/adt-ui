@@ -3,28 +3,33 @@
 import React, { useState, useEffect } from "react";
 import DataTable from "react-data-table-component";
 import dayjs from "dayjs";
-import { DatePicker, Button } from "antd";
+import { DatePicker, Button, Select } from "antd"; // Import Select for dropdown
 import { PackageStatus } from "@/common/constants";
 import Cookies from "js-cookie";
 import { toast } from "react-toastify";
 import apiClient from "@/utils/apiClient";
+import { jwtDecode } from "jwt-decode"; // Import jwtDecode
+import { useAuthStore } from "@/stores/authStore";
 
-const columns = [
-  { name: "Tracking Number", selector: (row) => row.trackingNumber, sortable: true },
-  { name: "Description", selector: (row) => row.description, sortable: true },
-  { name: "Weight (lb)", selector: (row) => row.weight, sortable: true },
-  { name: "Shipper", selector: (row) => row.shipper, sortable: true },
-  { name: "House Number", selector: (row) => row.houseNumber, sortable: true },
+const { Option } = Select; // Destructure Option from Select
+
+// Define columns for all users (non-admin)
+const defaultColumns = [
+  { name: "Tracking Number", selector: (row: any) => row.trackingNumber, sortable: true },
+  { name: "Description", selector: (row: any) => row.description, sortable: true },
+  { name: "Weight (lb)", selector: (row: any) => row.weight, sortable: true },
+  { name: "Shipper", selector: (row: any) => row.shipper, sortable: true },
+  { name: "House Number", selector: (row: any) => row.houseNumber, sortable: true },
   {
     name: "Date Received",
-    selector: (row) => dayjs(row.dateReceived).format("MMM D, YYYY h:mm A"),
+    selector: (row: any) => dayjs(row.dateReceived).format("MMM D, YYYY h:mm A"),
     sortable: true
   },
   {
     name: "Status",
-    selector: (row) => row.status,
+    selector: (row: any) => row.status,
     sortable: true,
-    cell: (row) => (
+    cell: (row: any) => (
       <span className={`px-2 py-1 rounded ${row.status === PackageStatus.DELIVERED ? 'bg-green-500' :
         row.status === PackageStatus.IN_TRANSIT ? 'bg-blue-500' :
           'bg-gray-500'
@@ -42,27 +47,46 @@ const PackageList = () => {
   const [showAll, setShowAll] = useState(true);
   const [packages, setPackages] = useState([]);
   const [loading, setLoading] = useState(true);
+  // const [isAdmin, setIsAdmin] = useState(false);
+  const { isAdmin } = useAuthStore();
+
+  // useEffect(() => {
+  //   // Check user role on component mount
+  //   const accessToken = Cookies.get("access_token");
+  //   if (accessToken) {
+  //     try {
+  //       const decodedToken: any = jwtDecode(accessToken);
+  //       if (decodedToken.realm_access?.roles.includes("ADMIN")) {
+  //         setIsAdmin(true);
+  //       }
+  //     } catch (error) {
+  //       console.error("Failed to decode access token:", error);
+  //     }
+  //   }
+  //   fetchPackages();
+  // }, [dateFilter, isAdmin]); // Re-fetch if isAdmin changes
 
   useEffect(() => {
     fetchPackages();
-  }, [dateFilter]);
+  }, [dateFilter]); // Re-fetch if isAdmin changes
 
   const fetchPackages = async () => {
     try {
       setLoading(true);
-      const houseno = Cookies.get("houseno");
-      if (!houseno) {
-        throw new Error("House number not found in cookies");
+      let response;
+      if (isAdmin) {
+        response = await apiClient("/api/package/all");
+      } else {
+        const houseno = Cookies.get("houseno");
+        if (!houseno) {
+          throw new Error("House number not found in cookies");
+        }
+        // Only include date parameter if we're not showing all AND dateFilter exists
+        const dateParam = !showAll && dateFilter
+          ? `&date=${dateFilter.format("YYYY-MM-DD")}`
+          : '';
+        response = await apiClient(`/api/package?houseno=${houseno}${dateParam}`);
       }
-
-      // Only include date parameter if we're not showing all AND dateFilter exists
-      const dateParam = !showAll && dateFilter
-        ? `&date=${dateFilter.format("YYYY-MM-DD")}`
-        : '';
-
-      // const response = await apiClient(`/api/package?houseno=${houseno}${dateParam}`);
-
-      const response = await apiClient(`/api/package?houseno=${houseno}`);
 
       if (!response.ok) {
         toast.error("Failed to get packages");
@@ -77,18 +101,15 @@ const PackageList = () => {
     }
   };
 
-  const handleSearch = (e) => {
+  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearch(e.target.value);
   };
 
-  const handleStatusChange = (e) => {
+  const handleStatusChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setStatusFilter(e.target.value);
   };
 
-  const handleDateChange = (date) => {
-    // setDateFilter(date);
-    // setShowAll(false); // Switch to date-filtered view when date is selected
-
+  const handleDateChange = (date: dayjs.Dayjs | null) => {
     if (date) {
       setDateFilter(date);
       setShowAll(false);
@@ -100,7 +121,49 @@ const PackageList = () => {
     setDateFilter(null);
   };
 
-  const filteredData = packages.filter((pkg) => {
+  const handleStatusUpdate = async (packageTrackingNumber: string, newStatus: PackageStatus) => {
+    try {
+      const response = await apiClient(`/api/package`, { // The endpoint is /api/package for PUT requests
+        method: "PUT",
+        body: JSON.stringify({ trackingNumber: packageTrackingNumber, status: newStatus }), // Send trackingNumber and status
+      });
+
+      if (!response.ok) {
+        toast.error("Failed to update package status");
+      } else {
+        toast.success("Package status updated successfully!");
+        fetchPackages(); // Re-fetch packages to update the table
+      }
+    } catch (error) {
+      toast.error("Failed to update package status");
+    }
+  };
+
+  // Admin-specific columns with action dropdown
+  const adminColumns = [
+    ...defaultColumns,
+    {
+      name: "Actions",
+      cell: (row: any) => (
+        <Select
+          defaultValue={row.status}
+          style={{ width: 200 }}
+          onChange={(value: PackageStatus) => handleStatusUpdate(row.trackingNumber, value)} // Pass row.trackingNumber
+        >
+          {Object.values(PackageStatus).map((status) => (
+            <Option key={status} value={status}>
+              {status}
+            </Option>
+          ))}
+        </Select>
+      ),
+      ignoreRowClick: true, // Prevents row click from interfering with dropdown
+      allowOverflow: true,
+      button: true,
+    },
+  ];
+
+  const filteredData = packages.filter((pkg: any) => {
     const matchesSearch = search
       ? Object.values(pkg).some((val) =>
         val?.toString().toLowerCase().includes(search.toLowerCase())
@@ -111,7 +174,12 @@ const PackageList = () => {
       ? pkg.status === statusFilter
       : true;
 
-    return matchesSearch && matchesStatus;
+    // Apply date filter only if not showing all and dateFilter is set
+    const matchesDate = showAll || !dateFilter
+      ? true
+      : dayjs(pkg.dateReceived).isSame(dateFilter, 'day');
+
+    return matchesSearch && matchesStatus && matchesDate;
   });
 
   return (
@@ -119,7 +187,7 @@ const PackageList = () => {
       <h1 className="text-2xl font-semibold mb-4">My Packages</h1>
 
       {/* Filters */}
-      {/* <div className="flex flex-wrap gap-4 mb-4">
+      <div className="flex flex-wrap gap-4 mb-4">
         <input
           type="text"
           placeholder="Search packages..."
@@ -144,13 +212,8 @@ const PackageList = () => {
           value={showAll ? null : dateFilter}
           onChange={handleDateChange}
           format="YYYY-MM-DD"
-          allowClear={false} // Disable the clear button
+          allowClear={false}
           disabled={showAll}
-          onPanelChange={(value) => {
-            if (!showAll) {
-              setDateFilter(value);
-            }
-          }}
         />
         <Button
           type="primary"
@@ -159,11 +222,11 @@ const PackageList = () => {
         >
           {showAll ? "Show Date Filter" : "Show All Packages"}
         </Button>
-      </div> */}
+      </div>
 
       {/* Data Table */}
       <DataTable
-        columns={columns}
+        columns={isAdmin ? adminColumns : defaultColumns}
         data={filteredData}
         pagination
         highlightOnHover

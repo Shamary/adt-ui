@@ -5,3 +5,8 @@ export enum PackageStatus {
     SCHEDULE_FOR_DELIVERY = 'SCHEDULED FOR DELIVERY',
     DELIVERED = 'DELIVERED'
 }
+
+export enum Roles {
+    USER = 'USER',
+    ADMIN = 'ADMIN'
+}
