@@ -234,7 +234,7 @@ const PackageList = () => {
         progressPending={loading}
         noDataComponent={
           <p className="py-6 text-gray-400">
-            {loading ? "Loading packages..." : "No packages found"}
+            {loading ? "Loading packages..." : "No packages found for you"}
           </p>
         }
         customStyles={{

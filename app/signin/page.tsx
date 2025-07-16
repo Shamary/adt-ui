@@ -48,7 +48,6 @@ const SigninPage = () => {
 
           let roles = getUserRoles();
 
-          alert(`ROLES ${roles}`);
           if (roles.includes(Roles.ADMIN)) {
             setIsAdmin(true);
           }
