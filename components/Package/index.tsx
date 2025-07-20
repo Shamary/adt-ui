@@ -77,7 +77,7 @@ const PackageList = () => {
       setIsAdmin(false);
     }
     fetchPackages();
-  }, [dateFilter]); // Re-fetch if isAdmin changes
+  }, [dateFilter, isAdmin]); // Re-fetch if isAdmin changes
 
   const fetchPackages = async () => {
     try {
