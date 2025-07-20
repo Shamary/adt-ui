@@ -46,7 +46,6 @@ const SigninPage = () => {
 
           setIsAuthenticated(true);
 
-
           let roles = getUserRoles();
 
           if (roles.includes(Roles.ADMIN)) {
