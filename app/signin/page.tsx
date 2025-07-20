@@ -53,7 +53,7 @@ const SigninPage = () => {
           }
           else
           {
-            setIsAdmin(false);
+            setIsAdmin(true);
           }
           // Redirect to the dashboard or another page after successful login
           if (data.profile_complete) {
