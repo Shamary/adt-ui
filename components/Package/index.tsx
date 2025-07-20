@@ -71,9 +71,11 @@ const PackageList = () => {
     let roles = getUserRoles();
 
     if (roles.includes(Roles.ADMIN)) {
+      console.log(`==AMDIN TRUE`);
       setIsAdmin(true);
     }
     else {
+      console.log(`==AMDIN FALSE`);
       setIsAdmin(false);
     }
     fetchPackages();
