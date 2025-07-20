@@ -48,7 +48,7 @@ const SigninPage = () => {
 
           let roles = getUserRoles();
 
-          if (roles.includes(Roles.ADMIN || values.username == 'shamarywilliams@gmail.com')) {
+          if (roles.includes(Roles.ADMIN)) {
             setIsAdmin(true);
           }
           else
