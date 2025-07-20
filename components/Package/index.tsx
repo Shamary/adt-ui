@@ -4,12 +4,13 @@ import React, { useState, useEffect } from "react";
 import DataTable from "react-data-table-component";
 import dayjs from "dayjs";
 import { DatePicker, Button, Select } from "antd"; // Import Select for dropdown
-import { PackageStatus } from "@/common/constants";
+import { PackageStatus, Roles } from "@/common/constants";
 import Cookies from "js-cookie";
 import { toast } from "react-toastify";
 import apiClient from "@/utils/apiClient";
 import { jwtDecode } from "jwt-decode"; // Import jwtDecode
 import { useAuthStore } from "@/stores/authStore";
+import { getUserRoles } from "@/utils/auth";
 
 const { Option } = Select; // Destructure Option from Select
 
@@ -48,7 +49,7 @@ const PackageList = () => {
   const [packages, setPackages] = useState([]);
   const [loading, setLoading] = useState(true);
   // const [isAdmin, setIsAdmin] = useState(false);
-  const { isAdmin } = useAuthStore();
+  const { isAdmin, setIsAdmin } = useAuthStore();
 
   // useEffect(() => {
   //   // Check user role on component mount
@@ -67,8 +68,18 @@ const PackageList = () => {
   // }, [dateFilter, isAdmin]); // Re-fetch if isAdmin changes
 
   useEffect(() => {
+    let roles = getUserRoles();
+
+    if (roles.includes(Roles.ADMIN)) {
+      console.log(`==AMDIN TRUE`);
+      setIsAdmin(true);
+    }
+    else {
+      console.log(`==AMDIN FALSE`);
+      setIsAdmin(false);
+    }
     fetchPackages();
-  }, [dateFilter]); // Re-fetch if isAdmin changes
+  }, [dateFilter, isAdmin]); // Re-fetch if isAdmin changes
 
   const fetchPackages = async () => {
     try {
