@@ -39,14 +39,20 @@ const SigninPage = () => {
           const data = await response.json();
 
           // Store access_token, email, and houseno in cookies
-          Cookies.set('access_token', data.access_token, { secure: true, sameSite: 'Lax' });
+          Cookies.set('access_token', data.access_token, { secure: true, sameSite: 'strict' });
           Cookies.set('refresh_token', data.refresh_token, { secure: true, sameSite: 'strict' });
           Cookies.set('email', values.username, { secure: true, sameSite: 'strict' });
           Cookies.set('houseno', data.house_no, { secure: true, sameSite: 'strict' });
 
+          console.log(`====TOKEN set`);
+
           setIsAuthenticated(true);
 
+          console.log(`====AUTH set`);
+
           let roles = getUserRoles();
+
+          console.log(`====ROLES ${roles}`);
 
           if (roles.includes(Roles.ADMIN)) {
             setIsAdmin(true);
