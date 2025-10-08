@@ -22,7 +22,7 @@ interface AddressData {
     line1: string;
     city: string;
     state: string;
-    zipCode: string;
+    zipcode: string;
 }
 
 const UserProfilePage = () => {
@@ -82,7 +82,7 @@ const UserProfilePage = () => {
             addressLine: address?.line1 || '',
             city: address?.city || 'Miami',
             state: address?.state || 'FL',
-            zipCode: address?.zipCode || '33206-3206',
+            zipCode: address?.zipcode || '33206-3206',
             houseNumber: userData?.houseno || '',
         },
         validationSchema: Yup.object({
